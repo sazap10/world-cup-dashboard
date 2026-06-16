@@ -1,20 +1,15 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from 'react';
+import { type Dataset, isLiveEnabled, loadLiveDataset, SEED_DATASET } from '../data/source';
 import type { Team } from '../data/types';
-import {
-  SEED_DATASET,
-  isLiveEnabled,
-  loadLiveDataset,
-  type Dataset,
-} from '../data/source';
 
 interface DataState {
   /** The active dataset (seed until/unless live succeeds). */

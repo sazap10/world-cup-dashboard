@@ -5,11 +5,14 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/app.css';
 import { App } from './App';
-import { ClockProvider, TimezoneProvider } from './app/providers';
 import { DataProvider } from './app/DataProvider';
+import { ClockProvider, TimezoneProvider } from './app/providers';
 import { ThemeProvider } from './app/ThemeProvider';
 
-createRoot(document.getElementById('root')!).render(
+const rootEl = document.getElementById('root');
+if (!rootEl) throw new Error('Root element #root not found');
+
+createRoot(rootEl).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>

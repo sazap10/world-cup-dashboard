@@ -54,8 +54,12 @@ function displayScore(
   if (status === 'upcoming' || !match.result) return null;
   if (status === 'finished' || liveSource) return match.result;
   if (status === 'live' && minute !== null) {
-    const homeScored = goalMinutes(match.id, 'h', match.result.home).filter((m) => m <= minute).length;
-    const awayScored = goalMinutes(match.id, 'a', match.result.away).filter((m) => m <= minute).length;
+    const homeScored = goalMinutes(match.id, 'h', match.result.home).filter(
+      (m) => m <= minute,
+    ).length;
+    const awayScored = goalMinutes(match.id, 'a', match.result.away).filter(
+      (m) => m <= minute,
+    ).length;
     return { home: homeScored, away: awayScored };
   }
   return null;
@@ -65,8 +69,7 @@ export function toView(match: Match, nowMs: number): MatchView {
   // Live data overrides the clock with the API's reported status/minute.
   const liveSource = match.statusOverride !== undefined;
   const status = match.statusOverride ?? statusOf(match, nowMs);
-  const minute =
-    status === 'live' ? (match.minuteOverride ?? liveMinute(match, nowMs)) : null;
+  const minute = status === 'live' ? (match.minuteOverride ?? liveMinute(match, nowMs)) : null;
   return {
     ...match,
     status,

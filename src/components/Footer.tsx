@@ -1,5 +1,5 @@
-import { isFrozen } from '../lib/clock';
 import { useData } from '../app/DataProvider';
+import { isFrozen } from '../lib/clock';
 
 export function Footer() {
   const { source, error } = useData();
@@ -9,14 +9,13 @@ export function Footer() {
       <div className="shell footer__inner">
         {live ? (
           <p>
-            Live fixtures, results and standings from football-data.org. Standings are
-            computed from completed matches.
+            Live fixtures, results and standings from football-data.org. Standings are computed from
+            completed matches.
           </p>
         ) : (
           <p>
-            Showing built-in sample data in the official 48-team World Cup 2026 format.
-            Add a football-data.org API key (see <code>.env.example</code>) to switch to
-            live data.
+            Showing built-in sample data in the official 48-team World Cup 2026 format. Add a
+            football-data.org API key (see <code>.env.example</code>) to switch to live data.
             {error && <span className="footer__warn"> Live data unavailable: {error}</span>}
           </p>
         )}

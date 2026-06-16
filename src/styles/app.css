@@ -193,7 +193,7 @@
   transition: color var(--dur-fast) var(--ease-out);
 }
 .nav-tab::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -231,7 +231,9 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   color: var(--ink);
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast);
 }
 .tz-select:hover {
   border-color: var(--border-strong);
@@ -281,7 +283,9 @@
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--muted);
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast),
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast),
     color var(--dur-fast);
 }
 .theme-toggle:hover {
@@ -385,16 +389,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background:
-    radial-gradient(120% 140% at 50% -20%, var(--glow-primary), transparent 60%),
-    var(--surface);
+    radial-gradient(120% 140% at 50% -20%, var(--glow-primary), transparent 60%), var(--surface);
   padding: var(--space-6);
   box-shadow: var(--shadow-md);
 }
 .featured--live {
   border-color: var(--accent-line);
   background:
-    radial-gradient(120% 140% at 50% -20%, var(--glow-accent), transparent 58%),
-    var(--surface);
+    radial-gradient(120% 140% at 50% -20%, var(--glow-accent), transparent 58%), var(--surface);
 }
 .featured__head {
   display: flex;
@@ -629,8 +631,10 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  transition: border-color var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 .match-card:hover {
   background: var(--surface-2);
@@ -770,7 +774,9 @@
   background: var(--surface-3);
   border: 1px solid var(--border);
   color: var(--ink);
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast);
 }
 .bcast--watch:hover {
   border-color: var(--primary);
@@ -944,6 +950,7 @@
   color: var(--faint);
 }
 .col-team {
+  /* biome-ignore lint/complexity/noImportantStyles: overrides the table's centered-cell default; team column must stay left-aligned */
   text-align: left !important;
   width: 100%;
 }
@@ -1255,7 +1262,9 @@
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   font-weight: 600;
-  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast);
 }
 .btn--primary {
   background: var(--primary);

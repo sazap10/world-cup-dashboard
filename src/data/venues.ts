@@ -20,6 +20,4 @@ export const VENUES: Venue[] = [
   { id: 'usa-lumen', stadium: 'Lumen Field', city: 'Seattle', country: 'USA' },
 ];
 
-export const VENUES_BY_ID: Record<string, Venue> = Object.fromEntries(
-  VENUES.map((v) => [v.id, v]),
-);
+export const VENUES_BY_ID: Record<string, Venue> = Object.fromEntries(VENUES.map((v) => [v.id, v]));

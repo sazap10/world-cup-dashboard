@@ -3,10 +3,10 @@
 // feed when that succeeds. Both produce the same shape, so consumers don't care
 // which is active.
 
-import type { Match, Team } from './types';
+import { fetchLiveDataset } from './live';
 import { MATCHES } from './schedule';
 import { TEAMS } from './teams';
-import { fetchLiveDataset } from './live';
+import type { Match, Team } from './types';
 
 export interface Dataset {
   source: 'seed' | 'live';

@@ -22,22 +22,23 @@ export function Countdown({ target, variant = 'inline' }: Props) {
     return <span className="mono countdown-inline">{text}</span>;
   }
 
-  const segs = days > 0
-    ? [
-        { v: days, l: days === 1 ? 'day' : 'days' },
-        { v: hours, l: 'hrs' },
-        { v: minutes, l: 'min' },
-      ]
-    : [
-        { v: hours, l: 'hrs' },
-        { v: minutes, l: 'min' },
-        { v: seconds, l: 'sec' },
-      ];
+  const segs =
+    days > 0
+      ? [
+          { v: days, l: days === 1 ? 'day' : 'days' },
+          { v: hours, l: 'hrs' },
+          { v: minutes, l: 'min' },
+        ]
+      : [
+          { v: hours, l: 'hrs' },
+          { v: minutes, l: 'min' },
+          { v: seconds, l: 'sec' },
+        ];
 
   return (
     <div className="countdown" role="timer" aria-label="Time until kickoff">
-      {segs.map((s, i) => (
-        <div className="countdown__seg" key={i}>
+      {segs.map((s) => (
+        <div className="countdown__seg" key={s.l}>
           <span className="countdown__num mono">{String(s.v).padStart(2, '0')}</span>
           <span className="countdown__lbl">{s.l}</span>
         </div>

@@ -8,8 +8,8 @@
 //   VITE_COMPETITION      competition code (default WC)
 
 import http from 'node:http';
-import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
 import { createFeedCache } from './feed-cache.mjs';
 
@@ -21,7 +21,9 @@ const feed = createFeedCache({
   upstream: process.env.FD_UPSTREAM,
   competition: process.env.VITE_COMPETITION,
   ttl: process.env.FD_CACHE_TTL_MS ? Number(process.env.FD_CACHE_TTL_MS) : undefined,
-  timeout: process.env.FD_UPSTREAM_TIMEOUT_MS ? Number(process.env.FD_UPSTREAM_TIMEOUT_MS) : undefined,
+  timeout: process.env.FD_UPSTREAM_TIMEOUT_MS
+    ? Number(process.env.FD_UPSTREAM_TIMEOUT_MS)
+    : undefined,
 });
 
 // `single: true` is the SPA fallback: unknown routes (e.g. /tables, /knockout)
@@ -49,7 +51,7 @@ const serveStatic = sirv(distDir, {
 //  - style-src: 'unsafe-inline' covers Vite's inlined styles; fonts.googleapis
 //    serves the Inter stylesheet, fonts.gstatic the font files.
 //  - img-src: 'self' + football-data.org crests + data: URIs.
-const INLINE_THEME_SCRIPT_HASH = "'sha256-YkkPKrnlSBPbev5MP8rbK30P3NgwpX3AGg4znU0eeQ8='";
+const INLINE_THEME_SCRIPT_HASH = "'sha256-hfjLPorkC70zNE8VsnnqHQ7RUOiZjH73LrUhGlM1W9A='";
 const CSP = [
   "default-src 'self'",
   `script-src 'self' ${INLINE_THEME_SCRIPT_HASH}`,

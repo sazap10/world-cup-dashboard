@@ -14,6 +14,7 @@ interface FlagProps {
  */
 export function Flag({ flag, crest, size = 'md' }: FlagProps) {
   const [failed, setFailed] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `crest` is the intentional reset trigger — a new crest URL should clear a prior load failure and retry
   useEffect(() => setFailed(false), [crest]);
 
   if (crest && !failed) {

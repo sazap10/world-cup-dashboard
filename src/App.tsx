@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { MobileNav } from './components/Nav';
-import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
+import { Knockout } from './pages/Knockout';
 import { Results } from './pages/Results';
 import { Tables } from './pages/Tables';
-import { Knockout } from './pages/Knockout';
 
 export function App() {
   const location = useLocation();

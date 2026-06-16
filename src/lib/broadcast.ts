@@ -1,5 +1,5 @@
-import type { Broadcaster } from '../data/types';
 import { BROADCASTERS } from '../data/broadcasters';
+import type { Broadcaster } from '../data/types';
 
 // No football data API reports UK TV rights, so we assign a BBC/ITV channel
 // locally and deterministically from a stable key (the match id). This keeps

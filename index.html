@@ -7,16 +7,16 @@
     <meta name="theme-color" content="#0c1322" />
     <script>
       // Apply the saved (or system) theme before first paint to avoid a flash.
-      (function () {
+      (() => {
         try {
-          var pref = localStorage.getItem('wc26.theme') || 'system';
-          var dark =
+          const pref = localStorage.getItem('wc26.theme') || 'system';
+          const dark =
             pref === 'dark' ||
             (pref !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
           document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-          var m = document.querySelector('meta[name="theme-color"]');
+          const m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', dark ? '#0c1322' : '#eef1f6');
-        } catch (e) {
+        } catch {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       })();

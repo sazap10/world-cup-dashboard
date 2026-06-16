@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { byKickoff, viewsOf } from '../lib/matches';
 import type { MatchView } from '../data/types';
-import { useNow } from './providers';
+import { byKickoff, viewsOf } from '../lib/matches';
 import { useData } from './DataProvider';
+import { useNow } from './providers';
 
 export interface Tournament {
   nowMs: number;
@@ -24,12 +24,12 @@ export function useTournament(): Tournament {
   const { dataset } = useData();
   const bucket = Math.floor(nowMs / 5000);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: nowMs is intentionally excluded in favour of the 5s `bucket` so this recomputes every 5s, not on every 1s tick
   return useMemo(() => {
     const all = viewsOf(dataset.matches, nowMs).sort(byKickoff);
     const live = all.filter((m) => m.status === 'live');
     const upcoming = all.filter((m) => m.status === 'upcoming');
     const finished = all.filter((m) => m.status === 'finished');
     return { nowMs, all, live, upcoming, finished, next: upcoming[0] ?? null };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bucket, dataset]);
 }

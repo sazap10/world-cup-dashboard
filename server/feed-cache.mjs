@@ -51,7 +51,10 @@ export function createFeedCache({
   async function read() {
     const due = !cache || Date.now() - lastAttempt > ttl;
     if (due && token) {
-      if (!inflight) inflight = refresh().finally(() => { inflight = null; });
+      if (!inflight)
+        inflight = refresh().finally(() => {
+          inflight = null;
+        });
       await inflight;
     }
     if (cache) {

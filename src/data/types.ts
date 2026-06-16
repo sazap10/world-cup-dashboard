@@ -1,8 +1,6 @@
 // Core domain types for the World Cup 2026 dashboard.
 
-export type GroupId =
-  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
-  | 'G' | 'H' | 'I' | 'J' | 'K' | 'L';
+export type GroupId = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L';
 
 export interface Team {
   /** FIFA-style 3-letter code, e.g. ENG. Used as the stable id. */

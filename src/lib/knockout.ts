@@ -1,7 +1,7 @@
-import type { GroupId, Match, Stage, Team } from '../data/types';
 import { GROUP_IDS } from '../data/teams';
-import { allStandings, type AllStandings } from './standings';
+import type { GroupId, Match, Stage, Team } from '../data/types';
 import { statusOf } from './matches';
+import { type AllStandings, allStandings } from './standings';
 
 export interface ResolvedSlot {
   /** A real team once the slot is decided. */

@@ -3,16 +3,15 @@
 // to a same-origin base ("/fd" by default) where the Vite dev proxy — or a
 // production proxy — injects the X-Auth-Token header.
 
-import type { GroupId, Match, Stage, Team } from './types';
 import { pickBroadcaster } from '../lib/broadcast';
 import type { Dataset } from './source';
+import type { GroupId, Match, Stage, Team } from './types';
 
 // The app calls our own server-side cached endpoint, which fetches the upstream
 // football-data.org feed at most once per TTL and fans it out to all clients.
 // Override with VITE_MATCHES_URL to point at a production caching proxy, or set
 // it to "/fd/v4/competitions/WC/matches" to hit the raw passthrough proxy.
-const MATCHES_URL =
-  (import.meta.env.VITE_MATCHES_URL as string | undefined) ?? '/api/wc/matches';
+const MATCHES_URL = (import.meta.env.VITE_MATCHES_URL as string | undefined) ?? '/api/wc/matches';
 
 interface FdTeam {
   id: number;

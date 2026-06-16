@@ -1,11 +1,11 @@
+import { useTeam } from '../app/DataProvider';
+import { useNow, useTimezone } from '../app/providers';
 import type { MatchView } from '../data/types';
 import { prettySlot } from '../lib/knockout';
 import { formatTime, relativeDayLabel } from '../lib/time';
-import { useNow, useTimezone } from '../app/providers';
-import { useTeam } from '../app/DataProvider';
-import { Flag } from './Flag';
 import { BroadcasterPill } from './BroadcasterPill';
 import { Countdown } from './Countdown';
+import { Flag } from './Flag';
 
 function BigTeam({ code, align }: { code: string; align: 'start' | 'end' }) {
   const team = useTeam(code);
@@ -43,7 +43,9 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
         ) : (
           <span className="featured__kickoff">
             {relativeDayLabel(match.kickoff, tz, nowMs)} ·{' '}
-            <time dateTime={match.kickoff} className="mono">{formatTime(match.kickoff, tz)}</time>
+            <time dateTime={match.kickoff} className="mono">
+              {formatTime(match.kickoff, tz)}
+            </time>
           </span>
         )}
       </div>
@@ -52,7 +54,11 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
         <BigTeam code={match.home} align="end" />
         <div className="featured__center">
           {score ? (
-            <div className="featured__score mono" aria-label="Score">
+            <div
+              className="featured__score mono"
+              role="img"
+              aria-label={`Score: ${score.home}–${score.away}`}
+            >
               <span>{score.home}</span>
               <span className="featured__score-sep">–</span>
               <span>{score.away}</span>

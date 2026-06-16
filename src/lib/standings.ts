@@ -1,5 +1,5 @@
-import type { GroupId, Match, Standing, Team } from '../data/types';
 import { GROUP_IDS } from '../data/teams';
+import type { GroupId, Match, Standing, Team } from '../data/types';
 import { byKickoff, statusOf } from './matches';
 
 interface Mutable {
@@ -49,23 +49,39 @@ export function standingsForGroup(
     .sort(byKickoff);
 
   for (const m of played) {
-    const home = table.get(m.home)!.standing;
-    const away = table.get(m.away)!.standing;
-    const { home: hg, away: ag } = m.result!;
+    // The `played` filter above guarantees both teams are in the table and
+    // m.result is set, but narrow explicitly to avoid non-null assertions.
+    const home = table.get(m.home)?.standing;
+    const away = table.get(m.away)?.standing;
+    if (!home || !away || !m.result) continue;
+    const { home: hg, away: ag } = m.result;
 
-    home.played++; away.played++;
-    home.goalsFor += hg; home.goalsAgainst += ag;
-    away.goalsFor += ag; away.goalsAgainst += hg;
+    home.played++;
+    away.played++;
+    home.goalsFor += hg;
+    home.goalsAgainst += ag;
+    away.goalsFor += ag;
+    away.goalsAgainst += hg;
 
     if (hg > ag) {
-      home.won++; home.points += 3; home.form.push('W');
-      away.lost++; away.form.push('L');
+      home.won++;
+      home.points += 3;
+      home.form.push('W');
+      away.lost++;
+      away.form.push('L');
     } else if (hg < ag) {
-      away.won++; away.points += 3; away.form.push('W');
-      home.lost++; home.form.push('L');
+      away.won++;
+      away.points += 3;
+      away.form.push('W');
+      home.lost++;
+      home.form.push('L');
     } else {
-      home.drawn++; home.points++; home.form.push('D');
-      away.drawn++; away.points++; away.form.push('D');
+      home.drawn++;
+      home.points++;
+      home.form.push('D');
+      away.drawn++;
+      away.points++;
+      away.form.push('D');
     }
   }
 
@@ -76,7 +92,9 @@ export function standingsForGroup(
   });
 
   standings.sort(compareStandings);
-  standings.forEach((s, i) => (s.rank = i + 1));
+  standings.forEach((s, i) => {
+    s.rank = i + 1;
+  });
   return standings;
 }
 

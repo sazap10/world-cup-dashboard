@@ -1,11 +1,11 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from 'react';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
@@ -53,7 +53,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Apply the resolved theme to <html> and sync the browser UI colour.
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', resolved);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', META_COLOR[resolved]);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', META_COLOR[resolved]);
   }, [resolved]);
 
   // Recompute on preference change; while on "system", track OS changes live.

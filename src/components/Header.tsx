@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
-import { NavTabs } from './Nav';
-import { TimezoneSelect } from './TimezoneSelect';
-import { ThemeToggle } from './ThemeToggle';
-import { useTournament } from '../app/useTournament';
 import { useData } from '../app/DataProvider';
+import { useTournament } from '../app/useTournament';
+import { NavTabs } from './Nav';
+import { ThemeToggle } from './ThemeToggle';
+import { TimezoneSelect } from './TimezoneSelect';
 
 function Wordmark() {
   return (
     <Link to="/" className="wordmark" aria-label="World Cup 2026 dashboard, home">
       <span className="wordmark__glyph" aria-hidden="true">
-        <svg viewBox="0 0 32 32" width="30" height="30">
+        <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
           <circle cx="16" cy="16" r="13" fill="none" stroke="var(--accent)" strokeWidth="2" />
           <path d="M16 7.5l3.4 2.5-1.3 4h-4.2l-1.3-4z" fill="var(--accent)" />
           <path d="M16 16h4.2l1.3 4L16 23.5 10.5 20l1.3-4z" fill="var(--primary)" />
@@ -40,14 +40,14 @@ function DataSourceBadge() {
   const live = source === 'live';
   return (
     <span
-      className={'src-badge' + (live ? ' src-badge--live' : '')}
+      className={`src-badge${live ? ' src-badge--live' : ''}`}
       title={
         live
           ? 'Showing live data from football-data.org'
           : 'Showing built-in sample data. Add a football-data.org API key to go live.'
       }
     >
-      <span className={'src-badge__dot' + (refreshing ? ' is-refreshing' : '')} aria-hidden="true" />
+      <span className={`src-badge__dot${refreshing ? ' is-refreshing' : ''}`} aria-hidden="true" />
       {live ? 'Live data' : 'Sample data'}
     </span>
   );

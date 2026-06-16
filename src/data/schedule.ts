@@ -1,7 +1,7 @@
-import type { Match, Score, Stage } from './types';
-import { GROUP_IDS, teamsInGroup } from './teams';
-import { VENUES } from './venues';
 import { pickBroadcaster } from '../lib/broadcast';
+import { GROUP_IDS, teamsInGroup } from './teams';
+import type { Match, Score, Stage } from './types';
+import { VENUES } from './venues';
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-randomness so the tournament looks the same every load.
@@ -44,9 +44,18 @@ function seededScore(matchId: string): Score {
 // Group stage: 12 groups × round-robin over 3 matchdays = 72 matches.
 // ---------------------------------------------------------------------------
 const PAIRINGS: number[][][] = [
-  [[0, 1], [2, 3]], // matchday 1
-  [[0, 2], [3, 1]], // matchday 2
-  [[3, 0], [1, 2]], // matchday 3
+  [
+    [0, 1],
+    [2, 3],
+  ], // matchday 1
+  [
+    [0, 2],
+    [3, 1],
+  ], // matchday 2
+  [
+    [3, 0],
+    [1, 2],
+  ], // matchday 3
 ];
 
 const SLOT_HOURS = [16, 18, 20, 22]; // UTC kickoff slots
@@ -132,19 +141,37 @@ const R32_TEMPLATES: Omit<KnockoutTemplate, 'stage' | 'roundLabel'>[] = [
   { id: 'M85', home: '1L', away: '3rd-6', day: 32, hour: 20, venueIndex: 14, broadcasterIndex: 0 },
   { id: 'M86', home: '2D', away: '2G', day: 32, hour: 22, venueIndex: 15, broadcasterIndex: 2 },
   { id: 'M87', home: '2I', away: '2K', day: 33, hour: 16, venueIndex: 12, broadcasterIndex: 1 },
-  { id: 'M88', home: '3rd-7', away: '3rd-8', day: 33, hour: 20, venueIndex: 3, broadcasterIndex: 3 },
+  {
+    id: 'M88',
+    home: '3rd-7',
+    away: '3rd-8',
+    day: 33,
+    hour: 20,
+    venueIndex: 3,
+    broadcasterIndex: 3,
+  },
 ];
 
 // Later rounds reference the winners of earlier matches.
 const R16_PAIRS: [string, string][] = [
-  ['W73', 'W74'], ['W75', 'W76'], ['W77', 'W78'], ['W79', 'W80'],
-  ['W81', 'W82'], ['W83', 'W84'], ['W85', 'W86'], ['W87', 'W88'],
+  ['W73', 'W74'],
+  ['W75', 'W76'],
+  ['W77', 'W78'],
+  ['W79', 'W80'],
+  ['W81', 'W82'],
+  ['W83', 'W84'],
+  ['W85', 'W86'],
+  ['W87', 'W88'],
 ];
 const QF_PAIRS: [string, string][] = [
-  ['W89', 'W90'], ['W91', 'W92'], ['W93', 'W94'], ['W95', 'W96'],
+  ['W89', 'W90'],
+  ['W91', 'W92'],
+  ['W93', 'W94'],
+  ['W95', 'W96'],
 ];
 const SF_PAIRS: [string, string][] = [
-  ['W97', 'W98'], ['W99', 'W100'],
+  ['W97', 'W98'],
+  ['W99', 'W100'],
 ];
 
 function buildKnockout(): Match[] {
@@ -170,19 +197,21 @@ function buildKnockout(): Match[] {
     roundLabel,
   });
 
-  R32_TEMPLATES.forEach((t) =>
-    out.push(make('K-' + t.id, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour, t.venueIndex)),
-  );
+  R32_TEMPLATES.forEach((t) => {
+    out.push(make(`K-${t.id}`, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour, t.venueIndex));
+  });
 
-  R16_PAIRS.forEach(([h, a], i) =>
-    out.push(make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16, i)),
-  );
-  QF_PAIRS.forEach(([h, a], i) =>
-    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16, i + 4)),
-  );
-  SF_PAIRS.forEach(([h, a], i) =>
-    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20, i + 8)),
-  );
+  R16_PAIRS.forEach(([h, a], i) => {
+    out.push(
+      make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16, i),
+    );
+  });
+  QF_PAIRS.forEach(([h, a], i) => {
+    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16, i + 4));
+  });
+  SF_PAIRS.forEach(([h, a], i) => {
+    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20, i + 8));
+  });
   out.push(make('K-M103', 'final', 'Final', 'W101', 'W102', 49, 19, 5));
 
   return out;

@@ -4,9 +4,8 @@
    and managed at runtime by ThemeProvider). Dark is the default. */
 :root {
   /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
-    sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, monospace;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, monospace;
 
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
@@ -54,7 +53,7 @@
    DARK theme (default) — deep stadium blue-black
    =========================================================================== */
 :root,
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   color-scheme: dark;
 
   --bg: oklch(0.165 0.018 256);
@@ -113,7 +112,7 @@
    LIGHT theme — clean broadcast daylight: light cool surfaces, deep cobalt,
    green pulled darker so it stays legible as text on white.
    =========================================================================== */
-:root[data-theme='light'] {
+:root[data-theme="light"] {
   color-scheme: light;
 
   --bg: oklch(0.97 0.004 256);

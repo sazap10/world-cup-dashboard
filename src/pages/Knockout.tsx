@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
-import { useNow } from '../app/providers';
 import { useData } from '../app/DataProvider';
-import { buildBracket } from '../lib/knockout';
+import { useNow } from '../app/providers';
 import { BracketTie } from '../components/BracketTie';
 import { PageHeader } from '../components/headings';
+import { buildBracket } from '../lib/knockout';
 
 export function Knockout() {
   const nowMs = useNow();
   const { dataset } = useData();
   const bucket = Math.floor(nowMs / 5000);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: nowMs is intentionally excluded in favour of the 5s `bucket` so the bracket recomputes every 5s, not on every 1s tick
   const rounds = useMemo(
     () => buildBracket(dataset.matches, dataset.teams, nowMs),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [bucket, dataset],
   );
 
@@ -24,8 +24,10 @@ export function Knockout() {
       />
 
       <div className="bracket-scroll">
+        {/* biome-ignore lint/a11y/useSemanticElements: div/section keep the horizontal-scroll grid layout; list/listitem roles convey the structure to AT */}
         <div className="bracket" role="list">
           {rounds.map((round) => (
+            // biome-ignore lint/a11y/useSemanticElements: see above — styled section with an explicit listitem role
             <section
               className={`bracket-col bracket-col--${round.stage}`}
               key={round.stage}
@@ -43,7 +45,9 @@ export function Knockout() {
         </div>
       </div>
 
-      <p className="bracket-hint">Scroll horizontally to follow the bracket through to the final →</p>
+      <p className="bracket-hint">
+        Scroll horizontally to follow the bracket through to the final →
+      </p>
     </div>
   );
 }

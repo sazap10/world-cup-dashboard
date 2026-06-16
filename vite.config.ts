@@ -1,5 +1,5 @@
-import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { createFeedCache } from './server/feed-cache.mjs';
 
 /**
@@ -14,7 +14,9 @@ function footballDataCache(token: string): Plugin {
     upstream: process.env.FD_UPSTREAM,
     competition: process.env.VITE_COMPETITION,
     ttl: process.env.FD_CACHE_TTL_MS ? Number(process.env.FD_CACHE_TTL_MS) : undefined,
-    timeout: process.env.FD_UPSTREAM_TIMEOUT_MS ? Number(process.env.FD_UPSTREAM_TIMEOUT_MS) : undefined,
+    timeout: process.env.FD_UPSTREAM_TIMEOUT_MS
+      ? Number(process.env.FD_UPSTREAM_TIMEOUT_MS)
+      : undefined,
   });
 
   return {

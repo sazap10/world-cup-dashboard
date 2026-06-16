@@ -36,8 +36,20 @@ export function BroadcasterPill({ broadcaster: b, variant = 'watch' }: Props) {
       {playIcon}
       <span className="bcast__channel">{b.channel}</span>
       <span className="bcast__svc">Watch on {b.streaming}</span>
-      <svg className="bcast__ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M7 17 17 7" /><path d="M9 7h8v8" />
+      <svg
+        className="bcast__ext"
+        viewBox="0 0 24 24"
+        width="12"
+        height="12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M7 17 17 7" />
+        <path d="M9 7h8v8" />
       </svg>
     </a>
   );

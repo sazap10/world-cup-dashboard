@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { useTournament } from '../app/useTournament';
 import { useTimezone } from '../app/providers';
+import { useTournament } from '../app/useTournament';
+import { EmptyState } from '../components/EmptyState';
+import { PageHeader } from '../components/headings';
+import { MatchCard } from '../components/MatchCard';
 import { GROUP_IDS } from '../data/teams';
 import { groupByDay } from '../lib/matches';
 import { formatDayLong } from '../lib/time';
-import { MatchCard } from '../components/MatchCard';
-import { PageHeader } from '../components/headings';
-import { EmptyState } from '../components/EmptyState';
 
 type Filter = 'all' | 'group' | 'knockout' | string;
 
@@ -39,13 +39,28 @@ export function Results() {
         showZone
       />
 
+      {/* biome-ignore lint/a11y/useSemanticElements: a labelled group of filter controls is the correct ARIA pattern; no single semantic element fits */}
       <div className="filterbar" role="group" aria-label="Filter results">
-        <button className={chip(filter === 'all')} onClick={() => setFilter('all')}>All</button>
-        <button className={chip(filter === 'group')} onClick={() => setFilter('group')}>Group stage</button>
-        <button className={chip(filter === 'knockout')} onClick={() => setFilter('knockout')}>Knockout</button>
+        <button type="button" className={chip(filter === 'all')} onClick={() => setFilter('all')}>
+          All
+        </button>
+        <button
+          type="button"
+          className={chip(filter === 'group')}
+          onClick={() => setFilter('group')}
+        >
+          Group stage
+        </button>
+        <button
+          type="button"
+          className={chip(filter === 'knockout')}
+          onClick={() => setFilter('knockout')}
+        >
+          Knockout
+        </button>
         <span className="filterbar__div" aria-hidden="true" />
         {GROUP_IDS.map((g) => (
-          <button key={g} className={chip(filter === g)} onClick={() => setFilter(g)}>
+          <button type="button" key={g} className={chip(filter === g)} onClick={() => setFilter(g)}>
             {g}
           </button>
         ))}
@@ -76,5 +91,5 @@ export function Results() {
 }
 
 function chip(active: boolean): string {
-  return 'chip' + (active ? ' chip--active' : '');
+  return `chip${active ? ' chip--active' : ''}`;
 }
