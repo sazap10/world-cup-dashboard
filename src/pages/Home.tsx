@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { useTournament } from '../app/useTournament';
 import { useTimezone } from '../app/providers';
@@ -61,7 +62,7 @@ export function Home() {
           </div>
 
           {days.map((day, di) => (
-            <div className="day-group" key={day.key} style={{ '--i': di } as React.CSSProperties}>
+            <div className="day-group" key={day.key} style={{ '--i': di } as CSSProperties}>
               <h3 className="day-group__label">
                 {relativeDayLabel(day.iso, tz, nowMs)}
                 <span className="day-group__count">{day.matches.length} {day.matches.length === 1 ? 'match' : 'matches'}</span>
