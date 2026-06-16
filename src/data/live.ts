@@ -128,7 +128,9 @@ function collectTeams(matches: FdMatch[]): Team[] {
         code,
         name: side.name ?? side.shortName ?? code,
         crest: side.crest ?? undefined,
-        group: group ?? ('A' as GroupId),
+        // Left undefined when unknown — a later group-stage match backfills it
+        // above. Never guess a group, or the team pollutes that group's table.
+        group,
       });
     }
   }

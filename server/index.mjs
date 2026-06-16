@@ -21,6 +21,7 @@ const feed = createFeedCache({
   upstream: process.env.FD_UPSTREAM,
   competition: process.env.VITE_COMPETITION,
   ttl: process.env.FD_CACHE_TTL_MS ? Number(process.env.FD_CACHE_TTL_MS) : undefined,
+  timeout: process.env.FD_UPSTREAM_TIMEOUT_MS ? Number(process.env.FD_UPSTREAM_TIMEOUT_MS) : undefined,
 });
 
 // `single: true` is the SPA fallback: unknown routes (e.g. /tables, /knockout)

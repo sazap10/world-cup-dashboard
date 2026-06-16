@@ -12,7 +12,8 @@ export interface Team {
   flag?: string;
   /** Crest image URL (live data) — preferred over the emoji flag when present. */
   crest?: string;
-  group: GroupId;
+  /** Group, when known. Absent for knockout-only teams in the live feed. */
+  group?: GroupId;
   confederation?: 'UEFA' | 'CONMEBOL' | 'CONCACAF' | 'CAF' | 'AFC' | 'OFC';
 }
 

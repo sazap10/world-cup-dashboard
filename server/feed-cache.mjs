@@ -12,14 +12,19 @@ export function createFeedCache({
   upstream = 'https://api.football-data.org',
   competition = 'WC',
   ttl = 60_000,
+  timeout = 8_000,
 } = {}) {
   let cache = null; // { body: string, fetchedAt: number }
   let lastError = null; // { status: number, body: string }
   let inflight = null; // Promise<void> | null
 
   async function refresh() {
+    // Bound the upstream call: without this, a hung connection would stall the
+    // shared in-flight promise and every client coalesced onto it. On timeout
+    // the fetch rejects and the stale-while-error path keeps serving last-good.
     const res = await fetch(`${upstream}/v4/competitions/${competition}/matches`, {
       headers: { 'X-Auth-Token': token, Accept: 'application/json' },
+      signal: AbortSignal.timeout(timeout),
     });
     const body = await res.text();
     if (res.ok) {
