@@ -40,10 +40,19 @@ function liveMinute(match: Match, nowMs: number): number {
   return Math.max(1, Math.min(90, Math.round((elapsed / 105) * 90)));
 }
 
-/** Score to show right now: final when finished, progressive when live. */
-function displayScore(match: Match, status: MatchStatus, minute: number | null): Score | null {
-  if (!match.result) return null;
-  if (status === 'finished') return match.result;
+/**
+ * Score to show right now. Live API data carries the true current score in
+ * `result`, so we show it directly; seed data reveals its final score
+ * progressively over the simulated 90 minutes.
+ */
+function displayScore(
+  match: Match,
+  status: MatchStatus,
+  minute: number | null,
+  liveSource: boolean,
+): Score | null {
+  if (status === 'upcoming' || !match.result) return null;
+  if (status === 'finished' || liveSource) return match.result;
   if (status === 'live' && minute !== null) {
     const homeScored = goalMinutes(match.id, 'h', match.result.home).filter((m) => m <= minute).length;
     const awayScored = goalMinutes(match.id, 'a', match.result.away).filter((m) => m <= minute).length;
@@ -53,13 +62,16 @@ function displayScore(match: Match, status: MatchStatus, minute: number | null):
 }
 
 export function toView(match: Match, nowMs: number): MatchView {
-  const status = statusOf(match, nowMs);
-  const minute = status === 'live' ? liveMinute(match, nowMs) : null;
+  // Live data overrides the clock with the API's reported status/minute.
+  const liveSource = match.statusOverride !== undefined;
+  const status = match.statusOverride ?? statusOf(match, nowMs);
+  const minute =
+    status === 'live' ? (match.minuteOverride ?? liveMinute(match, nowMs)) : null;
   return {
     ...match,
     status,
     minute,
-    displayScore: displayScore(match, status, minute),
+    displayScore: displayScore(match, status, minute, liveSource),
   };
 }
 

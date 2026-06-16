@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { NavTabs } from './Nav';
 import { TimezoneSelect } from './TimezoneSelect';
 import { useTournament } from '../app/useTournament';
+import { useData } from '../app/DataProvider';
 
 function Wordmark() {
   return (
@@ -33,6 +34,24 @@ function LiveTicker() {
   );
 }
 
+function DataSourceBadge() {
+  const { source, refreshing } = useData();
+  const live = source === 'live';
+  return (
+    <span
+      className={'src-badge' + (live ? ' src-badge--live' : '')}
+      title={
+        live
+          ? 'Showing live data from football-data.org'
+          : 'Showing built-in sample data. Add a football-data.org API key to go live.'
+      }
+    >
+      <span className={'src-badge__dot' + (refreshing ? ' is-refreshing' : '')} aria-hidden="true" />
+      {live ? 'Live data' : 'Sample data'}
+    </span>
+  );
+}
+
 export function Header() {
   return (
     <header className="header">
@@ -42,6 +61,7 @@ export function Header() {
           <LiveTicker />
         </div>
         <div className="header__right">
+          <DataSourceBadge />
           <TimezoneSelect />
         </div>
       </div>

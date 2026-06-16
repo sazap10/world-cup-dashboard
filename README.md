@@ -42,13 +42,38 @@ npm run build    # type-check + production build
 npm run preview  # preview the production build
 ```
 
-## About the data
+## Data: live with seed fallback
 
-Fixtures, results, and standings are **illustrative seed data** generated deterministically
-in the official 48-team World Cup 2026 format (12 groups, 16 host venues, BBC/ITV UK
-rights split). They are **not** live results. The data layer
-([`src/data`](src/data)) is structured so it can be swapped for a live fixtures API
-without touching the UI.
+The app has two data sources behind one interface ([`src/data/source.ts`](src/data/source.ts)):
+
+- **Seed** — deterministic sample data in the official 48-team format (12 groups, 16 host
+  venues, BBC/ITV rights split). Always available, offline, instant.
+- **Live** — the [football-data.org](https://www.football-data.org/) World Cup feed
+  ([`src/data/live.ts`](src/data/live.ts)).
+
+It **renders the seed data instantly, then upgrades to live in the background** and
+re-polls every 60s. If the live fetch fails (no key, network, rate limit), it silently
+stays on whatever it has. The header shows a **Live data / Sample data** badge.
+
+Standings are always computed in-app from completed matches, so the seed and live paths
+behave identically. No sports API reports UK TV rights, so the **BBC/ITV "where to watch"
+channel is assigned locally** and deterministically per match in both modes.
+
+### Enabling live data
+
+1. Get a free key at <https://www.football-data.org/client/register>.
+2. `cp .env.example .env` and set `FOOTBALL_DATA_TOKEN=your-key`.
+3. `npm run dev`.
+
+The token is **never exposed to the browser**: the Vite dev server proxies
+`/fd/*` → `https://api.football-data.org/*` and injects the `X-Auth-Token` header
+server-side (see [`vite.config.ts`](vite.config.ts)). For production, point
+`VITE_API_BASE` at an equivalent proxy (e.g. a serverless function) that adds the header.
+Set `VITE_USE_LIVE=false` to force seed mode.
+
+> football-data.org's free tier allows 10 requests/minute; the 60s poll stays well under.
+> Group/knockout coverage of the 2026 edition depends on your plan — when a field is
+> missing the app falls back cleanly.
 
 ### Demo clock
 
@@ -63,9 +88,11 @@ example, to see the live state), freeze time with a query parameter:
 
 ```
 src/
-  data/        teams, venues, broadcasters, schedule + result generation, types
-  lib/         clock, timezone formatting, match state, standings, knockout resolution
-  app/         clock + timezone providers, the useTournament selector
+  data/        types, teams, venues, broadcasters, seed schedule generation,
+               source.ts (seed/live abstraction), live.ts (football-data.org adapter)
+  lib/         clock, timezone formatting, match state, standings, knockout, broadcast
+  app/         clock + timezone providers, DataProvider (live fetch + fallback),
+               useTournament selector
   components/  Header, Nav, MatchCard, FeaturedMatch, StandingsTable, BracketTie, …
   pages/       Home, Results, Tables, Knockout
   styles/      tokens.css, base.css, app.css

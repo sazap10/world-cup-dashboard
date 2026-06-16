@@ -1,6 +1,5 @@
-import type { GroupId, Standing } from '../data/types';
-import { GROUP_IDS, TEAMS_BY_CODE, teamsInGroup } from '../data/teams';
-import { GROUP_MATCHES } from '../data/schedule';
+import type { GroupId, Match, Standing, Team } from '../data/types';
+import { GROUP_IDS } from '../data/teams';
 import { byKickoff, statusOf } from './matches';
 
 interface Mutable {
@@ -11,10 +10,15 @@ interface Mutable {
  * Build the table for one group from completed matches only. Live and upcoming
  * games don't count toward the standings (they update at full-time).
  */
-export function standingsForGroup(group: GroupId, nowMs: number): Standing[] {
-  const teams = teamsInGroup(group);
+export function standingsForGroup(
+  group: GroupId,
+  matches: Match[],
+  teams: Team[],
+  nowMs: number,
+): Standing[] {
+  const groupTeams = teams.filter((t) => t.group === group);
   const table = new Map<string, Mutable>();
-  for (const team of teams) {
+  for (const team of groupTeams) {
     table.set(team.code, {
       standing: {
         team,
@@ -32,9 +36,17 @@ export function standingsForGroup(group: GroupId, nowMs: number): Standing[] {
     });
   }
 
-  const played = GROUP_MATCHES.filter(
-    (m) => m.group === group && m.result && statusOf(m, nowMs) === 'finished',
-  ).sort(byKickoff);
+  const played = matches
+    .filter(
+      (m) =>
+        m.stage === 'group' &&
+        m.group === group &&
+        m.result &&
+        statusOf(m, nowMs) === 'finished' &&
+        table.has(m.home) &&
+        table.has(m.away),
+    )
+    .sort(byKickoff);
 
   for (const m of played) {
     const home = table.get(m.home)!.standing;
@@ -82,18 +94,14 @@ export interface AllStandings {
   bestThirds: Standing[];
 }
 
-export function allStandings(nowMs: number): AllStandings {
+export function allStandings(matches: Match[], teams: Team[], nowMs: number): AllStandings {
   const byGroup = {} as Record<GroupId, Standing[]>;
   const thirds: Standing[] = [];
   for (const g of GROUP_IDS) {
-    const table = standingsForGroup(g, nowMs);
+    const table = standingsForGroup(g, matches, teams, nowMs);
     byGroup[g] = table;
     if (table[2]) thirds.push(table[2]);
   }
   thirds.sort(compareStandings);
   return { byGroup, bestThirds: thirds };
-}
-
-export function teamByCode(code: string) {
-  return TEAMS_BY_CODE[code];
 }

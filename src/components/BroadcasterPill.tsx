@@ -1,4 +1,4 @@
-import { BROADCASTERS_BY_ID } from '../data/broadcasters';
+import type { Broadcaster } from '../data/types';
 
 const playIcon = (
   <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
@@ -7,14 +7,13 @@ const playIcon = (
 );
 
 interface Props {
-  broadcasterId: string;
+  broadcaster: Broadcaster;
   /** "watch" = call-to-action link; "tag" = compact label only. */
   variant?: 'watch' | 'tag';
 }
 
 /** Where to watch in the UK, linking out to the streaming service. */
-export function BroadcasterPill({ broadcasterId, variant = 'watch' }: Props) {
-  const b = BROADCASTERS_BY_ID[broadcasterId];
+export function BroadcasterPill({ broadcaster: b, variant = 'watch' }: Props) {
   if (!b) return null;
 
   if (variant === 'tag') {

@@ -6,14 +6,17 @@ import './styles/base.css';
 import './styles/app.css';
 import { App } from './App';
 import { ClockProvider, TimezoneProvider } from './app/providers';
+import { DataProvider } from './app/DataProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ClockProvider>
-        <TimezoneProvider>
-          <App />
-        </TimezoneProvider>
+        <DataProvider>
+          <TimezoneProvider>
+            <App />
+          </TimezoneProvider>
+        </DataProvider>
       </ClockProvider>
     </BrowserRouter>
   </StrictMode>,

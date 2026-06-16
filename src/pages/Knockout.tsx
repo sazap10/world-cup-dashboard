@@ -1,14 +1,19 @@
 import { useMemo } from 'react';
-import { useTournament } from '../app/useTournament';
+import { useNow } from '../app/providers';
+import { useData } from '../app/DataProvider';
 import { buildBracket } from '../lib/knockout';
 import { BracketTie } from '../components/BracketTie';
 import { PageHeader } from '../components/headings';
 
 export function Knockout() {
-  const { nowMs } = useTournament();
+  const nowMs = useNow();
+  const { dataset } = useData();
   const bucket = Math.floor(nowMs / 5000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rounds = useMemo(() => buildBracket(nowMs), [bucket]);
+  const rounds = useMemo(
+    () => buildBracket(dataset.matches, dataset.teams, nowMs),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [bucket, dataset],
+  );
 
   return (
     <div className="shell page page-knockout">

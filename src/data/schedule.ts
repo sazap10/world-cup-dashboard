@@ -1,7 +1,7 @@
 import type { Match, Score, Stage } from './types';
 import { GROUP_IDS, teamsInGroup } from './teams';
 import { VENUES } from './venues';
-import { BROADCASTERS } from './broadcasters';
+import { pickBroadcaster } from '../lib/broadcast';
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-randomness so the tournament looks the same every load.
@@ -64,7 +64,6 @@ function juneKickoff(day: number, hour: number): string {
 function buildGroupStage(): Match[] {
   const matches: Match[] = [];
   let venueCursor = 0;
-  let broadcastCursor = 0;
 
   GROUP_IDS.forEach((group, gIndex) => {
     const teams = teamsInGroup(group); // 4 teams, draw order
@@ -78,8 +77,6 @@ function buildGroupStage(): Match[] {
       dayPairs.forEach(([h, a], i) => {
         const hour = SLOT_HOURS[(gIndex + mdIndex + i * 2) % SLOT_HOURS.length];
         const id = `G-${group}-${matchday}-${i + 1}`;
-        const venue = VENUES[venueCursor++ % VENUES.length];
-        const broadcaster = BROADCASTERS[broadcastCursor++ % BROADCASTERS.length];
 
         matches.push({
           id,
@@ -87,8 +84,8 @@ function buildGroupStage(): Match[] {
           group,
           matchday,
           kickoff: juneKickoff(day, hour),
-          venueId: venue.id,
-          broadcasterId: broadcaster.id,
+          venue: VENUES[venueCursor++ % VENUES.length],
+          broadcaster: pickBroadcaster(id),
           home: teams[h].code,
           away: teams[a].code,
           result: seededScore(id),
@@ -161,13 +158,12 @@ function buildKnockout(): Match[] {
     day: number,
     hour: number,
     vIndex: number,
-    bIndex: number,
   ): Match => ({
     id,
     stage,
     kickoff: juneKickoff(day, hour),
-    venueId: VENUES[vIndex % VENUES.length].id,
-    broadcasterId: BROADCASTERS[bIndex % BROADCASTERS.length].id,
+    venue: VENUES[vIndex % VENUES.length],
+    broadcaster: pickBroadcaster(id),
     home,
     away,
     result: null,
@@ -175,19 +171,19 @@ function buildKnockout(): Match[] {
   });
 
   R32_TEMPLATES.forEach((t) =>
-    out.push(make('K-' + t.id, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour, t.venueIndex, t.broadcasterIndex)),
+    out.push(make('K-' + t.id, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour, t.venueIndex)),
   );
 
   R16_PAIRS.forEach(([h, a], i) =>
-    out.push(make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16, i, i)),
+    out.push(make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16, i)),
   );
   QF_PAIRS.forEach(([h, a], i) =>
-    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16, i + 4, i + 1)),
+    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16, i + 4)),
   );
   SF_PAIRS.forEach(([h, a], i) =>
-    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20, i + 8, i)),
+    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20, i + 8)),
   );
-  out.push(make('K-M103', 'final', 'Final', 'W101', 'W102', 49, 19, 5, 0));
+  out.push(make('K-M103', 'final', 'Final', 'W101', 'W102', 49, 19, 5));
 
   return out;
 }

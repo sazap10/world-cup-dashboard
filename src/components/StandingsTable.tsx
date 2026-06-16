@@ -43,7 +43,7 @@ export function StandingsTable({ group, standings }: Props) {
               <td className="col-pos tnum">{s.rank}</td>
               <td className="col-team">
                 <span className="standings__team">
-                  <Flag flag={s.team.flag} size="sm" />
+                  <Flag flag={s.team.flag} crest={s.team.crest} size="sm" />
                   <span className="standings__name">{s.team.name}</span>
                   <span className="standings__code">{s.team.code}</span>
                 </span>

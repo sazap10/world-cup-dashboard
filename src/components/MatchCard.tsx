@@ -1,9 +1,8 @@
 import type { MatchView } from '../data/types';
-import { TEAMS_BY_CODE } from '../data/teams';
-import { VENUES_BY_ID } from '../data/venues';
 import { prettySlot } from '../lib/knockout';
 import { formatTime, relativeDayLabel } from '../lib/time';
 import { useNow, useTimezone } from '../app/providers';
+import { useTeam } from '../app/DataProvider';
 import { Flag } from './Flag';
 import { BroadcasterPill } from './BroadcasterPill';
 import { Countdown } from './Countdown';
@@ -16,11 +15,11 @@ interface TeamSide {
 }
 
 function TeamRow({ side }: { side: TeamSide }) {
-  const team = TEAMS_BY_CODE[side.code];
+  const team = useTeam(side.code);
   return (
     <div className={'team-row' + (side.isWinner ? ' team-row--winner' : '') + (side.faded ? ' team-row--faded' : '')}>
       {team ? (
-        <Flag flag={team.flag} />
+        <Flag flag={team.flag} crest={team.crest} />
       ) : (
         <span className="flag flag--md flag--slot" aria-hidden="true" />
       )}
@@ -39,7 +38,7 @@ export function MatchCard({ match, showRound = true }: Props) {
   const { tz } = useTimezone();
   const nowMs = useNow();
 
-  const venue = VENUES_BY_ID[match.venueId];
+  const venue = match.venue;
   const score = match.displayScore;
   const homeGoals = score ? score.home : null;
   const awayGoals = score ? score.away : null;
@@ -85,11 +84,11 @@ export function MatchCard({ match, showRound = true }: Props) {
             <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z" />
             <circle cx="12" cy="10" r="2.5" />
           </svg>
-          {venue ? `${venue.stadium}, ${venue.city}` : 'Venue TBC'}
+          {venue ? [venue.stadium, venue.city].filter(Boolean).join(', ') : 'Venue TBC'}
         </span>
         <div className="match-card__watch">
           {startsSoon && <Countdown target={match.kickoff} />}
-          <BroadcasterPill broadcasterId={match.broadcasterId} variant="watch" />
+          <BroadcasterPill broadcaster={match.broadcaster} variant="watch" />
         </div>
       </div>
     </article>

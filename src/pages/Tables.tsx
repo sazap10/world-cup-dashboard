@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useTournament } from '../app/useTournament';
+import { useNow } from '../app/providers';
+import { useData } from '../app/DataProvider';
 import { allStandings } from '../lib/standings';
 import { GROUP_IDS } from '../data/teams';
 import { StandingsTable } from '../components/StandingsTable';
@@ -8,10 +9,14 @@ import { Flag } from '../components/Flag';
 import { PageHeader } from '../components/headings';
 
 export function Tables() {
-  const { nowMs } = useTournament();
+  const nowMs = useNow();
+  const { dataset } = useData();
   const bucket = Math.floor(nowMs / 5000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const standings = useMemo(() => allStandings(nowMs), [bucket]);
+  const standings = useMemo(
+    () => allStandings(dataset.matches, dataset.teams, nowMs),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [bucket, dataset],
+  );
 
   return (
     <div className="shell page">
@@ -41,7 +46,7 @@ export function Tables() {
           {standings.bestThirds.map((s, i) => (
             <li key={s.team.code} className={'thirds__row' + (i < 8 ? ' is-through' : '')}>
               <span className="thirds__rank tnum">{i + 1}</span>
-              <Flag flag={s.team.flag} size="sm" />
+              <Flag flag={s.team.flag} crest={s.team.crest} size="sm" />
               <span className="thirds__name">{s.team.name}</span>
               <span className="thirds__group">Grp {s.team.group}</span>
               <span className="thirds__pts tnum">

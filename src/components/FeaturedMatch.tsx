@@ -1,18 +1,21 @@
 import type { MatchView } from '../data/types';
-import { TEAMS_BY_CODE } from '../data/teams';
-import { VENUES_BY_ID } from '../data/venues';
 import { prettySlot } from '../lib/knockout';
 import { formatTime, relativeDayLabel } from '../lib/time';
 import { useNow, useTimezone } from '../app/providers';
+import { useTeam } from '../app/DataProvider';
 import { Flag } from './Flag';
 import { BroadcasterPill } from './BroadcasterPill';
 import { Countdown } from './Countdown';
 
 function BigTeam({ code, align }: { code: string; align: 'start' | 'end' }) {
-  const team = TEAMS_BY_CODE[code];
+  const team = useTeam(code);
   return (
     <div className={`big-team big-team--${align}`}>
-      {team ? <Flag flag={team.flag} size="lg" /> : <span className="flag flag--lg flag--slot" aria-hidden="true" />}
+      {team ? (
+        <Flag flag={team.flag} crest={team.crest} size="lg" />
+      ) : (
+        <span className="flag flag--lg flag--slot" aria-hidden="true" />
+      )}
       <span className="big-team__name">{team ? team.name : prettySlot(code)}</span>
     </div>
   );
@@ -21,7 +24,7 @@ function BigTeam({ code, align }: { code: string; align: 'start' | 'end' }) {
 export function FeaturedMatch({ match }: { match: MatchView }) {
   const { tz } = useTimezone();
   const nowMs = useNow();
-  const venue = VENUES_BY_ID[match.venueId];
+  const venue = match.venue;
   const score = match.displayScore;
   const isLive = match.status === 'live';
 
@@ -70,9 +73,13 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
 
       <div className="featured__foot">
         <span className="featured__venue">
-          {venue ? `${venue.stadium} · ${venue.city}, ${venue.country}` : 'Venue to be confirmed'}
+          {venue
+            ? [venue.stadium, [venue.city, venue.country].filter(Boolean).join(', ')]
+                .filter(Boolean)
+                .join(' · ')
+            : 'Venue to be confirmed'}
         </span>
-        <BroadcasterPill broadcasterId={match.broadcasterId} variant="watch" />
+        <BroadcasterPill broadcaster={match.broadcaster} variant="watch" />
       </div>
     </article>
   );

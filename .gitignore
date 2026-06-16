@@ -3,6 +3,13 @@ dist
 dist-ssr
 *.local
 .DS_Store
+*.tsbuildinfo
+.playwright-cli/
+
+# Local env / secrets (keep .env.example tracked)
+.env
+.env.*
+!.env.example
 .vite
 
 # Editor

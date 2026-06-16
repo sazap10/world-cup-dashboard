@@ -8,17 +8,19 @@ export interface Team {
   /** FIFA-style 3-letter code, e.g. ENG. Used as the stable id. */
   code: string;
   name: string;
-  /** Emoji flag (falls back gracefully where unsupported). */
-  flag: string;
+  /** Emoji flag (seed data). Falls back gracefully where unsupported. */
+  flag?: string;
+  /** Crest image URL (live data) — preferred over the emoji flag when present. */
+  crest?: string;
   group: GroupId;
-  confederation: 'UEFA' | 'CONMEBOL' | 'CONCACAF' | 'CAF' | 'AFC' | 'OFC';
+  confederation?: 'UEFA' | 'CONMEBOL' | 'CONCACAF' | 'CAF' | 'AFC' | 'OFC';
 }
 
 export interface Venue {
   id: string;
   stadium: string;
-  city: string;
-  country: 'USA' | 'Canada' | 'Mexico';
+  city?: string;
+  country?: string;
 }
 
 export interface Broadcaster {
@@ -31,7 +33,7 @@ export interface Broadcaster {
   watchUrl: string;
 }
 
-export type Stage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final';
+export type Stage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final' | 'third';
 
 export type MatchStatus = 'upcoming' | 'live' | 'finished';
 
@@ -48,19 +50,27 @@ export interface Match {
   matchday?: number;
   /** ISO 8601 UTC kickoff timestamp. */
   kickoff: string;
-  venueId: string;
-  broadcasterId: string;
+  /** Resolved venue, or null when unknown (live data may omit it). */
+  venue: Venue | null;
+  /** UK broadcaster, always assigned locally (no API provides this). */
+  broadcaster: Broadcaster;
   /** Team codes, or knockout placeholder labels like "1A" / "W73". */
   home: string;
   away: string;
   /**
-   * The eventual full-time score, known for every scheduled group game.
-   * `null` for knockout ties whose participants aren't decided yet.
-   * Whether it's revealed depends on the match's live status (see lib/matches).
+   * Score to use. For seed group games this is the eventual full-time score
+   * (revealed progressively by the clock). For live data it is the current
+   * score reported by the API. `null` when no score applies yet.
    */
   result: Score | null;
   /** Human label for the round, e.g. "Round of 16". */
   roundLabel: string;
+  /**
+   * When set (live data), the clock-derived status/minute are bypassed and
+   * the API's truth is used instead. Absent for seed data (clock drives it).
+   */
+  statusOverride?: MatchStatus;
+  minuteOverride?: number | null;
 }
 
 /** A match plus its clock-derived state, for rendering. */
