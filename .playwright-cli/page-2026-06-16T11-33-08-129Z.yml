@@ -1,0 +1,652 @@
+- generic [ref=e2]:
+  - link "Skip to content" [ref=e3] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - link "World Cup 2026 dashboard, home" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img [ref=e9]
+          - generic [ref=e13]:
+            - strong [ref=e14]: World Cup
+            - generic [ref=e15]: "2026"
+        - link "2 matches live now" [ref=e16] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e18]: "2"
+          - generic [ref=e19]: live now
+      - generic "Show kickoff times in this timezone" [ref=e21]:
+        - img [ref=e23]
+        - generic [ref=e26]: Timezone
+        - combobox "Timezone" [ref=e27] [cursor=pointer]:
+          - option "London · BST" [selected]
+          - option "Dublin · GMT+1"
+          - option "Central Europe · CEST"
+          - option "New York (ET) · GMT-4"
+          - option "Chicago (CT) · GMT-5"
+          - option "Denver (MT) · GMT-6"
+          - option "Los Angeles (PT) · GMT-7"
+          - option "Mexico City · GMT-6"
+          - option "Toronto · GMT-4"
+          - option "UTC · UTC"
+        - generic:
+          - img
+    - navigation "Primary" [ref=e30]:
+      - link "Home" [ref=e31] [cursor=pointer]:
+        - /url: /
+      - link "Results" [ref=e32] [cursor=pointer]:
+        - /url: /results
+      - link "Tables" [ref=e33] [cursor=pointer]:
+        - /url: /tables
+      - link "Knockout" [ref=e34] [cursor=pointer]:
+        - /url: /knockout
+  - main [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - heading "Results" [level=1] [ref=e39]
+          - paragraph [ref=e40]: 24 matches played · 2 in progress.
+        - generic [ref=e41]:
+          - text: Times in
+          - strong [ref=e42]: London (BST)
+      - group "Filter results" [ref=e43]:
+        - button "All" [ref=e44] [cursor=pointer]
+        - button "Group stage" [ref=e45] [cursor=pointer]
+        - button "Knockout" [ref=e46] [cursor=pointer]
+        - button "A" [ref=e48] [cursor=pointer]
+        - button "B" [ref=e49] [cursor=pointer]
+        - button "C" [ref=e50] [cursor=pointer]
+        - button "D" [ref=e51] [cursor=pointer]
+        - button "E" [ref=e52] [cursor=pointer]
+        - button "F" [ref=e53] [cursor=pointer]
+        - button "G" [ref=e54] [cursor=pointer]
+        - button "H" [ref=e55] [cursor=pointer]
+        - button "I" [ref=e56] [cursor=pointer]
+        - button "J" [ref=e57] [cursor=pointer]
+        - button "K" [ref=e58] [cursor=pointer]
+        - button "L" [ref=e59] [cursor=pointer]
+      - generic [ref=e60]:
+        - heading "Tuesday 16 June 4" [level=2] [ref=e61]:
+          - text: Tuesday 16 June
+          - generic [ref=e62]: "4"
+        - generic [ref=e63]:
+          - article [ref=e64]:
+            - generic [ref=e65]:
+              - generic [ref=e66]: Group B · Matchday 2
+              - generic [ref=e67]: Full time
+            - generic [ref=e68]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: 🇳🇿
+                - generic [ref=e71]: New Zealand
+                - generic [ref=e72]: "4"
+              - generic [ref=e73]:
+                - generic [ref=e74]: 🇧🇪
+                - generic [ref=e75]: Belgium
+                - generic [ref=e76]: "2"
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - img [ref=e79]
+                - text: Arrowhead Stadium, Kansas City
+              - link "BBC Two Watch on BBC iPlayer" [ref=e83] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e84]
+                - generic [ref=e86]: BBC Two
+                - generic [ref=e87]: Watch on BBC iPlayer
+                - img [ref=e88]
+          - article [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]: Group K · Matchday 1
+              - generic [ref=e94]: Full time
+            - generic [ref=e95]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: 🇯🇵
+                - generic [ref=e98]: Japan
+                - generic [ref=e99]: "4"
+              - generic [ref=e100]:
+                - generic [ref=e101]: 🇨🇩
+                - generic [ref=e102]: DR Congo
+                - generic [ref=e103]: "1"
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - img [ref=e106]
+                - text: Hard Rock Stadium, Miami
+              - link "BBC Two Watch on BBC iPlayer" [ref=e110] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e111]
+                - generic [ref=e113]: BBC Two
+                - generic [ref=e114]: Watch on BBC iPlayer
+                - img [ref=e115]
+          - article [ref=e118]:
+            - generic [ref=e119]:
+              - generic [ref=e120]: Group A · Matchday 2
+              - generic [ref=e121]: Full time
+            - generic [ref=e122]:
+              - generic [ref=e123]:
+                - generic [ref=e124]: 🇲🇽
+                - generic [ref=e125]: Mexico
+                - generic [ref=e126]: "4"
+              - generic [ref=e127]:
+                - generic [ref=e128]: 🇸🇦
+                - generic [ref=e129]: Saudi Arabia
+                - generic [ref=e130]: "2"
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - img [ref=e133]
+                - text: Estadio BBVA, Monterrey
+              - link "ITV1 Watch on ITVX" [ref=e137] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv1
+                - img [ref=e138]
+                - generic [ref=e140]: ITV1
+                - generic [ref=e141]: Watch on ITVX
+                - img [ref=e142]
+          - article [ref=e145]:
+            - generic [ref=e146]:
+              - generic [ref=e147]: Group L · Matchday 1
+              - generic [ref=e148]: Full time
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]: 🇵🇾
+                - generic [ref=e152]: Paraguay
+                - generic [ref=e153]: "1"
+              - generic [ref=e154]:
+                - generic [ref=e155]: 🇦🇹
+                - generic [ref=e156]: Austria
+                - generic [ref=e157]: "4"
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - img [ref=e160]
+                - text: BMO Field, Toronto
+              - link "ITV4 Watch on ITVX" [ref=e164] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv4
+                - img [ref=e165]
+                - generic [ref=e167]: ITV4
+                - generic [ref=e168]: Watch on ITVX
+                - img [ref=e169]
+      - generic [ref=e172]:
+        - heading "Monday 15 June 4" [level=2] [ref=e173]:
+          - text: Monday 15 June
+          - generic [ref=e174]: "4"
+        - generic [ref=e175]:
+          - article [ref=e176]:
+            - generic [ref=e177]:
+              - generic [ref=e178]: Group I · Matchday 1
+              - generic [ref=e179]: Full time
+            - generic [ref=e180]:
+              - generic [ref=e181]:
+                - generic [ref=e182]: 🏴󠁧󠁢󠁥󠁮󠁧󠁿
+                - generic [ref=e183]: England
+                - generic [ref=e184]: "1"
+              - generic [ref=e185]:
+                - generic [ref=e186]: 🇩🇰
+                - generic [ref=e187]: Denmark
+                - generic [ref=e188]: "2"
+            - generic [ref=e189]:
+              - generic [ref=e190]:
+                - img [ref=e191]
+                - text: Estadio Azteca, Mexico City
+              - link "BBC One Watch on BBC iPlayer" [ref=e195] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbcone
+                - img [ref=e196]
+                - generic [ref=e198]: BBC One
+                - generic [ref=e199]: Watch on BBC iPlayer
+                - img [ref=e200]
+          - article [ref=e203]:
+            - generic [ref=e204]:
+              - generic [ref=e205]: Group J · Matchday 1
+              - generic [ref=e206]: Full time
+            - generic [ref=e207]:
+              - generic [ref=e208]:
+                - generic [ref=e209]: 🇩🇪
+                - generic [ref=e210]: Germany
+                - generic [ref=e211]: "1"
+              - generic [ref=e212]:
+                - generic [ref=e213]: 🇷🇸
+                - generic [ref=e214]: Serbia
+                - generic [ref=e215]: "2"
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - img [ref=e218]
+                - text: AT&T Stadium, Dallas
+              - link "ITV1 Watch on ITVX" [ref=e222] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv1
+                - img [ref=e223]
+                - generic [ref=e225]: ITV1
+                - generic [ref=e226]: Watch on ITVX
+                - img [ref=e227]
+          - article [ref=e230]:
+            - generic [ref=e231]:
+              - generic [ref=e232]: Group I · Matchday 1
+              - generic [ref=e233]: Full time
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - generic [ref=e236]: 🇩🇿
+                - generic [ref=e237]: Algeria
+                - generic [ref=e238]: "0"
+              - generic [ref=e239]:
+                - generic [ref=e240]: 🇶🇦
+                - generic [ref=e241]: Qatar
+                - generic [ref=e242]: "2"
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - img [ref=e245]
+                - text: Estadio Akron, Guadalajara
+              - link "BBC Two Watch on BBC iPlayer" [ref=e249] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e250]
+                - generic [ref=e252]: BBC Two
+                - generic [ref=e253]: Watch on BBC iPlayer
+                - img [ref=e254]
+          - article [ref=e257]:
+            - generic [ref=e258]:
+              - generic [ref=e259]: Group J · Matchday 1
+              - generic [ref=e260]: Full time
+            - generic [ref=e261]:
+              - generic [ref=e262]:
+                - generic [ref=e263]: 🇨🇮
+                - generic [ref=e264]: Côte d'Ivoire
+                - generic [ref=e265]: "0"
+              - generic [ref=e266]:
+                - generic [ref=e267]: 🇰🇷
+                - generic [ref=e268]: South Korea
+                - generic [ref=e269]: "1"
+            - generic [ref=e270]:
+              - generic [ref=e271]:
+                - img [ref=e272]
+                - text: SoFi Stadium, Los Angeles
+              - link "ITV4 Watch on ITVX" [ref=e276] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv4
+                - img [ref=e277]
+                - generic [ref=e279]: ITV4
+                - generic [ref=e280]: Watch on ITVX
+                - img [ref=e281]
+      - generic [ref=e284]:
+        - heading "Sunday 14 June 4" [level=2] [ref=e285]:
+          - text: Sunday 14 June
+          - generic [ref=e286]: "4"
+        - generic [ref=e287]:
+          - article [ref=e288]:
+            - generic [ref=e289]:
+              - generic [ref=e290]: Group G · Matchday 1
+              - generic [ref=e291]: Full time
+            - generic [ref=e292]:
+              - generic [ref=e293]:
+                - generic [ref=e294]: 🇳🇬
+                - generic [ref=e295]: Nigeria
+                - generic [ref=e296]: "1"
+              - generic [ref=e297]:
+                - generic [ref=e298]: 🇺🇿
+                - generic [ref=e299]: Uzbekistan
+                - generic [ref=e300]: "1"
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - img [ref=e303]
+                - text: MetLife Stadium, New York / New Jersey
+              - link "BBC Two Watch on BBC iPlayer" [ref=e307] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e308]
+                - generic [ref=e310]: BBC Two
+                - generic [ref=e311]: Watch on BBC iPlayer
+                - img [ref=e312]
+          - article [ref=e315]:
+            - generic [ref=e316]:
+              - generic [ref=e317]: Group H · Matchday 1
+              - generic [ref=e318]: Full time
+            - generic [ref=e319]:
+              - generic [ref=e320]:
+                - generic [ref=e321]: 🇨🇲
+                - generic [ref=e322]: Cameroon
+                - generic [ref=e323]: "1"
+              - generic [ref=e324]:
+                - generic [ref=e325]: 🇧🇴
+                - generic [ref=e326]: Bolivia
+                - generic [ref=e327]: "2"
+            - generic [ref=e328]:
+              - generic [ref=e329]:
+                - img [ref=e330]
+                - text: Levi's Stadium, San Francisco Bay Area
+              - link "ITV4 Watch on ITVX" [ref=e334] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv4
+                - img [ref=e335]
+                - generic [ref=e337]: ITV4
+                - generic [ref=e338]: Watch on ITVX
+                - img [ref=e339]
+          - article [ref=e342]:
+            - generic [ref=e343]:
+              - generic [ref=e344]: Group G · Matchday 1
+              - generic [ref=e345]: Full time
+            - generic [ref=e346]:
+              - generic [ref=e347]:
+                - generic [ref=e348]: 🇧🇷
+                - generic [ref=e349]: Brazil
+                - generic [ref=e350]: "1"
+              - generic [ref=e351]:
+                - generic [ref=e352]: 🇨🇭
+                - generic [ref=e353]: Switzerland
+                - generic [ref=e354]: "1"
+            - generic [ref=e355]:
+              - generic [ref=e356]:
+                - img [ref=e357]
+                - text: BC Place, Vancouver
+              - link "BBC One Watch on BBC iPlayer" [ref=e361] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbcone
+                - img [ref=e362]
+                - generic [ref=e364]: BBC One
+                - generic [ref=e365]: Watch on BBC iPlayer
+                - img [ref=e366]
+          - article [ref=e369]:
+            - generic [ref=e370]:
+              - generic [ref=e371]: Group H · Matchday 1
+              - generic [ref=e372]: Full time
+            - generic [ref=e373]:
+              - generic [ref=e374]:
+                - generic [ref=e375]: 🇵🇹
+                - generic [ref=e376]: Portugal
+                - generic [ref=e377]: "2"
+              - generic [ref=e378]:
+                - generic [ref=e379]: 🇨🇴
+                - generic [ref=e380]: Colombia
+                - generic [ref=e381]: "2"
+            - generic [ref=e382]:
+              - generic [ref=e383]:
+                - img [ref=e384]
+                - text: Lincoln Financial Field, Philadelphia
+              - link "ITV1 Watch on ITVX" [ref=e388] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv1
+                - img [ref=e389]
+                - generic [ref=e391]: ITV1
+                - generic [ref=e392]: Watch on ITVX
+                - img [ref=e393]
+      - generic [ref=e396]:
+        - heading "Saturday 13 June 4" [level=2] [ref=e397]:
+          - text: Saturday 13 June
+          - generic [ref=e398]: "4"
+        - generic [ref=e399]:
+          - article [ref=e400]:
+            - generic [ref=e401]:
+              - generic [ref=e402]: Group E · Matchday 1
+              - generic [ref=e403]: Full time
+            - generic [ref=e404]:
+              - generic [ref=e405]:
+                - generic [ref=e406]: 🇪🇸
+                - generic [ref=e407]: Spain
+                - generic [ref=e408]: "0"
+              - generic [ref=e409]:
+                - generic [ref=e410]: 🇺🇾
+                - generic [ref=e411]: Uruguay
+                - generic [ref=e412]: "0"
+            - generic [ref=e413]:
+              - generic [ref=e414]:
+                - img [ref=e415]
+                - text: Mercedes-Benz Stadium, Atlanta
+              - link "BBC One Watch on BBC iPlayer" [ref=e419] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbcone
+                - img [ref=e420]
+                - generic [ref=e422]: BBC One
+                - generic [ref=e423]: Watch on BBC iPlayer
+                - img [ref=e424]
+          - article [ref=e427]:
+            - generic [ref=e428]:
+              - generic [ref=e429]: Group F · Matchday 1
+              - generic [ref=e430]: Full time
+            - generic [ref=e431]:
+              - generic [ref=e432]:
+                - generic [ref=e433]: 🇫🇷
+                - generic [ref=e434]: France
+                - generic [ref=e435]: "1"
+              - generic [ref=e436]:
+                - generic [ref=e437]: 🇸🇳
+                - generic [ref=e438]: Senegal
+                - generic [ref=e439]: "3"
+            - generic [ref=e440]:
+              - generic [ref=e441]:
+                - img [ref=e442]
+                - text: NRG Stadium, Houston
+              - link "ITV1 Watch on ITVX" [ref=e446] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv1
+                - img [ref=e447]
+                - generic [ref=e449]: ITV1
+                - generic [ref=e450]: Watch on ITVX
+                - img [ref=e451]
+          - article [ref=e454]:
+            - generic [ref=e455]:
+              - generic [ref=e456]: Group E · Matchday 1
+              - generic [ref=e457]: Full time
+            - generic [ref=e458]:
+              - generic [ref=e459]:
+                - generic [ref=e460]: 🇮🇷
+                - generic [ref=e461]: Iran
+                - generic [ref=e462]: "2"
+              - generic [ref=e463]:
+                - generic [ref=e464]: 🇨🇷
+                - generic [ref=e465]: Costa Rica
+                - generic [ref=e466]: "0"
+            - generic [ref=e467]:
+              - generic [ref=e468]:
+                - img [ref=e469]
+                - text: Arrowhead Stadium, Kansas City
+              - link "BBC Two Watch on BBC iPlayer" [ref=e473] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e474]
+                - generic [ref=e476]: BBC Two
+                - generic [ref=e477]: Watch on BBC iPlayer
+                - img [ref=e478]
+          - article [ref=e481]:
+            - generic [ref=e482]:
+              - generic [ref=e483]: Group F · Matchday 1
+              - generic [ref=e484]: Full time
+            - generic [ref=e485]:
+              - generic [ref=e486]:
+                - generic [ref=e487]: 🇦🇺
+                - generic [ref=e488]: Australia
+                - generic [ref=e489]: "0"
+              - generic [ref=e490]:
+                - generic [ref=e491]: 🇵🇦
+                - generic [ref=e492]: Panama
+                - generic [ref=e493]: "3"
+            - generic [ref=e494]:
+              - generic [ref=e495]:
+                - img [ref=e496]
+                - text: Lumen Field, Seattle
+              - link "ITV4 Watch on ITVX" [ref=e500] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv4
+                - img [ref=e501]
+                - generic [ref=e503]: ITV4
+                - generic [ref=e504]: Watch on ITVX
+                - img [ref=e505]
+      - generic [ref=e508]:
+        - heading "Friday 12 June 4" [level=2] [ref=e509]:
+          - text: Friday 12 June
+          - generic [ref=e510]: "4"
+        - generic [ref=e511]:
+          - article [ref=e512]:
+            - generic [ref=e513]:
+              - generic [ref=e514]: Group C · Matchday 1
+              - generic [ref=e515]: Full time
+            - generic [ref=e516]:
+              - generic [ref=e517]:
+                - generic [ref=e518]: 🇪🇬
+                - generic [ref=e519]: Egypt
+                - generic [ref=e520]: "1"
+              - generic [ref=e521]:
+                - generic [ref=e522]: 🇮🇶
+                - generic [ref=e523]: Iraq
+                - generic [ref=e524]: "1"
+            - generic [ref=e525]:
+              - generic [ref=e526]:
+                - img [ref=e527]
+                - text: Hard Rock Stadium, Miami
+              - link "BBC Two Watch on BBC iPlayer" [ref=e531] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e532]
+                - generic [ref=e534]: BBC Two
+                - generic [ref=e535]: Watch on BBC iPlayer
+                - img [ref=e536]
+          - article [ref=e539]:
+            - generic [ref=e540]:
+              - generic [ref=e541]: Group D · Matchday 1
+              - generic [ref=e542]: Full time
+            - generic [ref=e543]:
+              - generic [ref=e544]:
+                - generic [ref=e545]: 🇹🇳
+                - generic [ref=e546]: Tunisia
+                - generic [ref=e547]: "1"
+              - generic [ref=e548]:
+                - generic [ref=e549]: 🇯🇲
+                - generic [ref=e550]: Jamaica
+                - generic [ref=e551]: "0"
+            - generic [ref=e552]:
+              - generic [ref=e553]:
+                - img [ref=e554]
+                - text: BMO Field, Toronto
+              - link "ITV4 Watch on ITVX" [ref=e558] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv4
+                - img [ref=e559]
+                - generic [ref=e561]: ITV4
+                - generic [ref=e562]: Watch on ITVX
+                - img [ref=e563]
+          - article [ref=e566]:
+            - generic [ref=e567]:
+              - generic [ref=e568]: Group C · Matchday 1
+              - generic [ref=e569]: Full time
+            - generic [ref=e570]:
+              - generic [ref=e571]:
+                - generic [ref=e572]: 🇦🇷
+                - generic [ref=e573]: Argentina
+                - generic [ref=e574]: "2"
+              - generic [ref=e575]:
+                - generic [ref=e576]: 🇳🇴
+                - generic [ref=e577]: Norway
+                - generic [ref=e578]: "0"
+            - generic [ref=e579]:
+              - generic [ref=e580]:
+                - img [ref=e581]
+                - text: Gillette Stadium, Boston
+              - link "BBC One Watch on BBC iPlayer" [ref=e585] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbcone
+                - img [ref=e586]
+                - generic [ref=e588]: BBC One
+                - generic [ref=e589]: Watch on BBC iPlayer
+                - img [ref=e590]
+          - article [ref=e593]:
+            - generic [ref=e594]:
+              - generic [ref=e595]: Group D · Matchday 1
+              - generic [ref=e596]: Full time
+            - generic [ref=e597]:
+              - generic [ref=e598]:
+                - generic [ref=e599]: 🇺🇸
+                - generic [ref=e600]: United States
+                - generic [ref=e601]: "1"
+              - generic [ref=e602]:
+                - generic [ref=e603]: 🇳🇱
+                - generic [ref=e604]: Netherlands
+                - generic [ref=e605]: "3"
+            - generic [ref=e606]:
+              - generic [ref=e607]:
+                - img [ref=e608]
+                - text: Estadio BBVA, Monterrey
+              - link "ITV1 Watch on ITVX" [ref=e612] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv1
+                - img [ref=e613]
+                - generic [ref=e615]: ITV1
+                - generic [ref=e616]: Watch on ITVX
+                - img [ref=e617]
+      - generic [ref=e620]:
+        - heading "Thursday 11 June 4" [level=2] [ref=e621]:
+          - text: Thursday 11 June
+          - generic [ref=e622]: "4"
+        - generic [ref=e623]:
+          - article [ref=e624]:
+            - generic [ref=e625]:
+              - generic [ref=e626]: Group A · Matchday 1
+              - generic [ref=e627]: Full time
+            - generic [ref=e628]:
+              - generic [ref=e629]:
+                - generic [ref=e630]: 🇲🇽
+                - generic [ref=e631]: Mexico
+                - generic [ref=e632]: "3"
+              - generic [ref=e633]:
+                - generic [ref=e634]: 🇭🇷
+                - generic [ref=e635]: Croatia
+                - generic [ref=e636]: "0"
+            - generic [ref=e637]:
+              - generic [ref=e638]:
+                - img [ref=e639]
+                - text: Estadio Azteca, Mexico City
+              - link "BBC One Watch on BBC iPlayer" [ref=e643] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbcone
+                - img [ref=e644]
+                - generic [ref=e646]: BBC One
+                - generic [ref=e647]: Watch on BBC iPlayer
+                - img [ref=e648]
+          - article [ref=e651]:
+            - generic [ref=e652]:
+              - generic [ref=e653]: Group B · Matchday 1
+              - generic [ref=e654]: Full time
+            - generic [ref=e655]:
+              - generic [ref=e656]:
+                - generic [ref=e657]: 🇨🇦
+                - generic [ref=e658]: Canada
+                - generic [ref=e659]: "0"
+              - generic [ref=e660]:
+                - generic [ref=e661]: 🇧🇪
+                - generic [ref=e662]: Belgium
+                - generic [ref=e663]: "0"
+            - generic [ref=e664]:
+              - generic [ref=e665]:
+                - img [ref=e666]
+                - text: AT&T Stadium, Dallas
+              - link "ITV1 Watch on ITVX" [ref=e670] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv1
+                - img [ref=e671]
+                - generic [ref=e673]: ITV1
+                - generic [ref=e674]: Watch on ITVX
+                - img [ref=e675]
+          - article [ref=e678]:
+            - generic [ref=e679]:
+              - generic [ref=e680]: Group A · Matchday 1
+              - generic [ref=e681]: Full time
+            - generic [ref=e682]:
+              - generic [ref=e683]:
+                - generic [ref=e684]: 🇸🇦
+                - generic [ref=e685]: Saudi Arabia
+                - generic [ref=e686]: "1"
+              - generic [ref=e687]:
+                - generic [ref=e688]: 🇬🇭
+                - generic [ref=e689]: Ghana
+                - generic [ref=e690]: "3"
+            - generic [ref=e691]:
+              - generic [ref=e692]:
+                - img [ref=e693]
+                - text: Estadio Akron, Guadalajara
+              - link "BBC Two Watch on BBC iPlayer" [ref=e697] [cursor=pointer]:
+                - /url: https://www.bbc.co.uk/iplayer/live/bbctwo
+                - img [ref=e698]
+                - generic [ref=e700]: BBC Two
+                - generic [ref=e701]: Watch on BBC iPlayer
+                - img [ref=e702]
+          - article [ref=e705]:
+            - generic [ref=e706]:
+              - generic [ref=e707]: Group B · Matchday 1
+              - generic [ref=e708]: Full time
+            - generic [ref=e709]:
+              - generic [ref=e710]:
+                - generic [ref=e711]: 🇪🇨
+                - generic [ref=e712]: Ecuador
+                - generic [ref=e713]: "1"
+              - generic [ref=e714]:
+                - generic [ref=e715]: 🇳🇿
+                - generic [ref=e716]: New Zealand
+                - generic [ref=e717]: "2"
+            - generic [ref=e718]:
+              - generic [ref=e719]:
+                - img [ref=e720]
+                - text: SoFi Stadium, Los Angeles
+              - link "ITV4 Watch on ITVX" [ref=e724] [cursor=pointer]:
+                - /url: https://www.itv.com/watch/itv4
+                - img [ref=e725]
+                - generic [ref=e727]: ITV4
+                - generic [ref=e728]: Watch on ITVX
+                - img [ref=e729]
+  - contentinfo [ref=e732]:
+    - generic [ref=e733]:
+      - paragraph [ref=e734]: Fixtures, results and standings are illustrative seed data in the official 48-team World Cup 2026 format, not live results.
+      - paragraph [ref=e735]: UK viewing via the BBC and ITV. Times shown in your selected timezone. · demo clock active
