@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { NavTabs } from './Nav';
 import { TimezoneSelect } from './TimezoneSelect';
+import { ThemeToggle } from './ThemeToggle';
 import { useTournament } from '../app/useTournament';
 import { useData } from '../app/DataProvider';
 
@@ -63,6 +64,7 @@ export function Header() {
         <div className="header__right">
           <DataSourceBadge />
           <TimezoneSelect />
+          <ThemeToggle />
         </div>
       </div>
       <div className="header__nav">
