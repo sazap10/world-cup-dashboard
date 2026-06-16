@@ -65,15 +65,22 @@ channel is assigned locally** and deterministically per match in both modes.
 2. `cp .env.example .env` and set `FOOTBALL_DATA_TOKEN=your-key`.
 3. `npm run dev`.
 
-The token is **never exposed to the browser**: the Vite dev server proxies
-`/fd/*` → `https://api.football-data.org/*` and injects the `X-Auth-Token` header
-server-side (see [`vite.config.ts`](vite.config.ts)). For production, point
-`VITE_API_BASE` at an equivalent proxy (e.g. a serverless function) that adds the header.
-Set `VITE_USE_LIVE=false` to force seed mode.
+The token is **never exposed to the browser**. The browser polls our own
+`/api/wc/matches` endpoint; a Vite dev-server middleware (see [`vite.config.ts`](vite.config.ts))
+fetches football-data.org **once per cache window** (`FD_CACHE_TTL_MS`, default 60s),
+injecting the `X-Auth-Token` server-side, and fans that single response out to every
+client. So upstream calls are bounded to ~1 per TTL **regardless of how many tabs or
+browsers are open** — with request coalescing (concurrent callers share one fetch) and
+stale-while-error (a failed refresh keeps serving the last good data). Responses carry
+`X-Cache: HIT | REFRESH` headers.
 
-> football-data.org's free tier allows 10 requests/minute; the 60s poll stays well under.
-> Group/knockout coverage of the 2026 edition depends on your plan — when a field is
-> missing the app falls back cleanly.
+For production, point `VITE_MATCHES_URL` at an equivalent caching proxy (e.g. a
+serverless function) that adds the header. Set `VITE_USE_LIVE=false` to force seed mode.
+A raw passthrough proxy is also available at `/fd/*` for manual/direct access.
+
+> football-data.org's free tier allows 10 requests/minute; one shared call per 60s stays
+> far under. Group/knockout coverage of the 2026 edition depends on your plan — when a
+> field (e.g. venue) is missing the app falls back cleanly.
 
 ### Demo clock
 

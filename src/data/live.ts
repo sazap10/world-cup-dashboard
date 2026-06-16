@@ -7,8 +7,12 @@ import type { GroupId, Match, Stage, Team } from './types';
 import { pickBroadcaster } from '../lib/broadcast';
 import type { Dataset } from './source';
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? '/fd';
-const COMPETITION = (import.meta.env.VITE_COMPETITION as string | undefined) ?? 'WC';
+// The app calls our own server-side cached endpoint, which fetches the upstream
+// football-data.org feed at most once per TTL and fans it out to all clients.
+// Override with VITE_MATCHES_URL to point at a production caching proxy, or set
+// it to "/fd/v4/competitions/WC/matches" to hit the raw passthrough proxy.
+const MATCHES_URL =
+  (import.meta.env.VITE_MATCHES_URL as string | undefined) ?? '/api/wc/matches';
 
 interface FdTeam {
   id: number;
@@ -132,13 +136,13 @@ function collectTeams(matches: FdMatch[]): Team[] {
 }
 
 export async function fetchLiveDataset(signal?: AbortSignal): Promise<Dataset> {
-  const res = await fetch(`${API_BASE}/v4/competitions/${COMPETITION}/matches`, {
+  const res = await fetch(MATCHES_URL, {
     headers: { Accept: 'application/json' },
     signal,
   });
 
   if (!res.ok) {
-    throw new Error(`football-data.org responded ${res.status} ${res.statusText}`);
+    throw new Error(`Live feed responded ${res.status} ${res.statusText}`);
   }
 
   const body = (await res.json()) as { matches?: FdMatch[] };
