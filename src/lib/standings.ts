@@ -80,7 +80,12 @@ export function standingsForGroup(
   return standings;
 }
 
-/** points → goal difference → goals for → team name (stable fallback). */
+/**
+ * points → goal difference → goals for → team name (stable fallback).
+ * Note: FIFA's full tiebreaker chain inserts head-to-head results among tied
+ * teams before fair-play/drawing of lots; that's intentionally omitted here.
+ * Team name is a deterministic stand-in so the order is always stable.
+ */
 export function compareStandings(a: Standing, b: Standing): number {
   if (b.points !== a.points) return b.points - a.points;
   if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;

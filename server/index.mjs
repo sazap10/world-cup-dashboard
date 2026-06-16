@@ -39,17 +39,27 @@ const serveStatic = sirv(distDir, {
 
 const server = http.createServer((req, res) => {
   const path = (req.url ?? '/').split('?')[0];
+  const method = req.method ?? 'GET';
   if (path === '/api/wc/matches') {
+    if (method !== 'GET' && method !== 'HEAD') {
+      res.statusCode = 405;
+      res.setHeader('Allow', 'GET, HEAD');
+      res.setHeader('Content-Type', 'application/json');
+      res.end('{"error":"method not allowed"}');
+      return;
+    }
     feed.handle(req, res);
     return;
   }
   if (path === '/healthz') {
     res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
     res.end('ok');
     return;
   }
   serveStatic(req, res, () => {
     res.statusCode = 404;
+    res.setHeader('Content-Type', 'text/plain');
     res.end('Not found');
   });
 });

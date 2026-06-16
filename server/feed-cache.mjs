@@ -14,46 +14,61 @@ export function createFeedCache({
   ttl = 60_000,
   timeout = 8_000,
 } = {}) {
-  let cache = null; // { body: string, fetchedAt: number }
-  let lastError = null; // { status: number, body: string }
+  let cache = null; // { body: string, fetchedAt: number } — last good payload
+  let lastError = null; // truthy once an upstream attempt has failed
+  let lastAttempt = 0; // epoch ms of the last refresh attempt (ok or fail)
   let inflight = null; // Promise<void> | null
 
   async function refresh() {
-    // Bound the upstream call: without this, a hung connection would stall the
-    // shared in-flight promise and every client coalesced onto it. On timeout
-    // the fetch rejects and the stale-while-error path keeps serving last-good.
-    const res = await fetch(`${upstream}/v4/competitions/${competition}/matches`, {
-      headers: { 'X-Auth-Token': token, Accept: 'application/json' },
-      signal: AbortSignal.timeout(timeout),
-    });
-    const body = await res.text();
-    if (res.ok) {
-      cache = { body, fetchedAt: Date.now() };
-      lastError = null;
-    } else {
-      // Keep serving good data; bump the timestamp so we don't hammer on errors.
-      lastError = { status: res.status, body };
-      if (cache) cache.fetchedAt = Date.now();
+    // Record the attempt up front so a failure still throttles the next try
+    // (via `lastAttempt`) instead of hammering upstream on every request.
+    lastAttempt = Date.now();
+    try {
+      // Bound the upstream call: without this, a hung connection would stall the
+      // shared in-flight promise and every client coalesced onto it. On timeout
+      // the fetch rejects and the stale-while-error path keeps serving last-good.
+      const res = await fetch(`${upstream}/v4/competitions/${competition}/matches`, {
+        headers: { 'X-Auth-Token': token, Accept: 'application/json' },
+        signal: AbortSignal.timeout(timeout),
+      });
+      const body = await res.text();
+      if (res.ok) {
+        cache = { body, fetchedAt: Date.now() };
+        lastError = null;
+      } else {
+        // Log upstream detail server-side; never forward it to clients (it can
+        // leak upstream internals and conflate server-config errors with theirs).
+        lastError = true;
+        console.error(`[feed-cache] upstream responded ${res.status}`);
+      }
+    } catch (err) {
+      lastError = true;
+      console.error(`[feed-cache] upstream fetch failed: ${err?.message ?? err}`);
     }
   }
 
   /** Current payload, refreshing first if the cache is stale. */
   async function read() {
-    const stale = !cache || Date.now() - cache.fetchedAt > ttl;
-    if (stale && token) {
-      if (!inflight) inflight = refresh().catch(() => {}).finally(() => { inflight = null; });
+    const due = !cache || Date.now() - lastAttempt > ttl;
+    if (due && token) {
+      if (!inflight) inflight = refresh().finally(() => { inflight = null; });
       await inflight;
     }
     if (cache) {
+      const fresh = Date.now() - cache.fetchedAt <= ttl;
+      // HIT: cache still fresh, no upstream call this request.
+      // REFRESH: we just fetched new upstream data.
+      // STALE: refresh failed (or was throttled) — serving last-good data.
+      const cacheState = !fresh ? 'STALE' : due ? 'REFRESH' : 'HIT';
       return {
         status: 200,
         body: cache.body,
-        cacheState: stale ? 'REFRESH' : 'HIT',
+        cacheState,
         age: Math.round((Date.now() - cache.fetchedAt) / 1000),
       };
     }
     if (lastError) {
-      return { status: lastError.status, body: lastError.body || '{"error":"upstream error"}', cacheState: 'MISS', age: 0 };
+      return { status: 502, body: '{"error":"upstream unavailable"}', cacheState: 'MISS', age: 0 };
     }
     return {
       status: token ? 502 : 503,
@@ -74,8 +89,11 @@ export function createFeedCache({
       res.statusCode = out.status;
       res.end(out.body);
     } catch (err) {
+      // Log the detail; return a generic message so we don't leak internals.
+      console.error('[feed-cache] handler error:', err);
       res.statusCode = 502;
-      res.end(JSON.stringify({ error: String(err) }));
+      res.setHeader('Content-Type', 'application/json');
+      res.end('{"error":"internal error"}');
     }
   }
 

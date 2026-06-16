@@ -1,6 +1,8 @@
 services:
   dashboard:
     build: .
+    # Run an init (tini) as PID 1 so signals are forwarded and zombies reaped.
+    init: true
     ports:
       - "8080:8080"
     environment:
