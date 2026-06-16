@@ -91,6 +91,40 @@ example, to see the live state), freeze time with a query parameter:
 /?now=2026-06-16T20:30:00Z
 ```
 
+## Deployment (single container)
+
+Production runs as **one Node process** ([`server/index.mjs`](server/index.mjs)) that
+serves the built SPA *and* the cached `/api/wc/matches` endpoint — same caching code as
+dev ([`server/feed-cache.mjs`](server/feed-cache.mjs)), so behaviour is identical. No
+separate API service to run.
+
+Run it locally:
+
+```bash
+npm run serve          # build, then start the server on :8080
+```
+
+Or with Docker (multi-stage build, production deps only, non-root, ~250 MB):
+
+```bash
+docker build -t wc-dashboard .
+docker run -p 8080:8080 -e FOOTBALL_DATA_TOKEN=your-key wc-dashboard
+# open http://localhost:8080
+```
+
+Or Compose (reads `FOOTBALL_DATA_TOKEN` from a local `.env`):
+
+```bash
+docker compose up --build
+```
+
+The token is passed as an **environment variable to the container** and stays server-side;
+it's never in the image or the client bundle. Without a token the container still runs and
+serves the seed data. Runtime env vars: `PORT` (default 8080), `FOOTBALL_DATA_TOKEN`,
+`FD_CACHE_TTL_MS` (default 60000), `VITE_COMPETITION`, `FD_UPSTREAM`. Health check at
+`/healthz`. Put it behind any reverse proxy / TLS terminator (nginx, Caddy, a PaaS) — it's
+a plain HTTP server on one port.
+
 ## Project structure
 
 ```
@@ -103,4 +137,6 @@ src/
   components/  Header, Nav, MatchCard, FeaturedMatch, StandingsTable, BracketTie, …
   pages/       Home, Results, Tables, Knockout
   styles/      tokens.css, base.css, app.css
+server/        feed-cache.mjs (shared cache), index.mjs (production server)
+Dockerfile · docker-compose.yml
 ```

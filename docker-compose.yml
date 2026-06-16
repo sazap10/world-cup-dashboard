@@ -1,0 +1,13 @@
+services:
+  dashboard:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # API key stays server-side in the container. Set it in a local .env file
+      # (compose reads .env automatically) or your orchestrator's secrets.
+      FOOTBALL_DATA_TOKEN: ${FOOTBALL_DATA_TOKEN:-}
+      # Optional tuning:
+      FD_CACHE_TTL_MS: ${FD_CACHE_TTL_MS:-60000}
+      # VITE_COMPETITION: WC
+    restart: unless-stopped
