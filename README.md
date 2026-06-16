@@ -20,18 +20,21 @@ and where do I watch it in the UK?**
   guides, and the best-third-placed race.
 - **Knockout bracket** — the full Round of 32 → Final tree, with provisional seedings
   drawn from the live standings until each group is decided.
+- **Light / dark / system theming** — a header toggle cycles System → Light → Dark. The
+  choice is remembered, *System* tracks your OS live, and the theme is applied before first
+  paint (no flash).
 - **Live, accessible, responsive** — live status pulses, WCAG AA contrast, status never
   by colour alone, full keyboard support, `prefers-reduced-motion` honoured, and a mobile
-  bottom-nav layout.
+  bottom-nav layout that works down to small phones.
 
 ## Tech
 
-- **React 18 + TypeScript + Vite**
+- **React 19 + TypeScript + Vite** (production server on Node 22)
 - **React Router** for the four routes
 - **No date library** — kickoff times are stored in UTC and rendered with the built-in
   `Intl` APIs, which handle DST (so `Europe/London` is BST in summer automatically).
-- Hand-authored CSS design system (OKLCH tokens, dark broadcast theme). See
-  [`DESIGN.md`](DESIGN.md) and [`PRODUCT.md`](PRODUCT.md).
+- Hand-authored CSS design system: OKLCH tokens with light + dark palettes switched via a
+  `data-theme` attribute. See [`DESIGN.md`](DESIGN.md) and [`PRODUCT.md`](PRODUCT.md).
 
 ## Getting started
 
@@ -70,9 +73,16 @@ The token is **never exposed to the browser**. The browser polls our own
 fetches football-data.org **once per cache window** (`FD_CACHE_TTL_MS`, default 60s),
 injecting the `X-Auth-Token` server-side, and fans that single response out to every
 client. So upstream calls are bounded to ~1 per TTL **regardless of how many tabs or
-browsers are open** — with request coalescing (concurrent callers share one fetch) and
-stale-while-error (a failed refresh keeps serving the last good data). Responses carry
-`X-Cache: HIT | REFRESH` headers.
+browsers are open**, with:
+
+- **request coalescing** — concurrent callers share one in-flight fetch;
+- **stale-while-error** — a failed or throttled refresh keeps serving the last good data
+  rather than erroring;
+- **a bounded upstream call** — `FD_UPSTREAM_TIMEOUT_MS` (default 8s) so a hung upstream
+  can't stall clients; upstream error details are logged server-side, never forwarded.
+
+Responses carry `X-Cache: HIT | REFRESH | STALE | MISS` headers. The same code runs in
+production ([`server/feed-cache.mjs`](server/feed-cache.mjs)).
 
 For production, point `VITE_MATCHES_URL` at an equivalent caching proxy (e.g. a
 serverless function) that adds the header. Set `VITE_USE_LIVE=false` to force seed mode.
@@ -121,9 +131,11 @@ docker compose up --build
 The token is passed as an **environment variable to the container** and stays server-side;
 it's never in the image or the client bundle. Without a token the container still runs and
 serves the seed data. Runtime env vars: `PORT` (default 8080), `FOOTBALL_DATA_TOKEN`,
-`FD_CACHE_TTL_MS` (default 60000), `VITE_COMPETITION`, `FD_UPSTREAM`. Health check at
-`/healthz`. Put it behind any reverse proxy / TLS terminator (nginx, Caddy, a PaaS) — it's
-a plain HTTP server on one port.
+`FD_CACHE_TTL_MS` (default 60000), `FD_UPSTREAM_TIMEOUT_MS` (default 8000),
+`VITE_COMPETITION`, `FD_UPSTREAM`. Health check at `/healthz` (used by the Docker
+`HEALTHCHECK`). `docker-compose.yml` runs with `init: true` so signals are handled and
+zombies reaped. Put it behind any reverse proxy / TLS terminator (nginx, Caddy, a PaaS) —
+it's a plain HTTP server on one port.
 
 ## Project structure
 
@@ -132,11 +144,12 @@ src/
   data/        types, teams, venues, broadcasters, seed schedule generation,
                source.ts (seed/live abstraction), live.ts (football-data.org adapter)
   lib/         clock, timezone formatting, match state, standings, knockout, broadcast
-  app/         clock + timezone providers, DataProvider (live fetch + fallback),
-               useTournament selector
-  components/  Header, Nav, MatchCard, FeaturedMatch, StandingsTable, BracketTie, …
+  app/         providers (clock, timezone), DataProvider (live fetch + fallback),
+               ThemeProvider (light/dark/system), useTournament selector
+  components/  Header, Nav, ThemeToggle, MatchCard, FeaturedMatch, StandingsTable, …
   pages/       Home, Results, Tables, Knockout
-  styles/      tokens.css, base.css, app.css
+  styles/      tokens.css (themed), base.css, app.css
 server/        feed-cache.mjs (shared cache), index.mjs (production server)
+index.html     includes the pre-paint theme script
 Dockerfile · docker-compose.yml
 ```
