@@ -4,7 +4,9 @@ A fast, timezone-aware companion for the FIFA World Cup 2026. Built to answer th
 matchday questions in one glance: **what's on next, when does it kick off in my time,
 and where do I watch it in the UK?**
 
-![Home](docs/home.png)
+| Dark | Light |
+| --- | --- |
+| ![Home, dark theme](docs/home.png) | ![Home, light theme](docs/home-light.png) |
 
 ## Features
 
