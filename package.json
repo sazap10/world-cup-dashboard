@@ -8,17 +8,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "start": "node server/index.mjs",
-    "serve": "npm run build && node server/index.mjs",
+    "start": "go run ./server",
+    "serve": "npm run build && go run ./server",
+    "build:server": "CGO_ENABLED=0 go build -trimpath -ldflags=\"-s -w\" -o bin/server ./server",
     "typecheck": "tsc -b --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
   },
-  "dependencies": {
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.17.0",
-    "sirv": "^3.0.0"
+  "engines": {
+    "node": ">=26"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
@@ -26,6 +24,9 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.17.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.16"
   }

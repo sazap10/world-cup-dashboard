@@ -105,18 +105,18 @@ example, to see the live state), freeze time with a query parameter:
 
 ## Deployment (single container)
 
-Production runs as **one Node process** ([`server/index.mjs`](server/index.mjs)) that
-serves the built SPA *and* the cached `/api/wc/matches` endpoint — same caching code as
-dev ([`server/feed-cache.mjs`](server/feed-cache.mjs)), so behaviour is identical. No
+Production runs as **one static Go binary** ([`server/`](server)) that serves the built
+SPA *and* the cached `/api/wc/matches` endpoint. The dev server mirrors the same cache
+logic from [`server/feed-cache.mjs`](server/feed-cache.mjs), so behaviour is identical. No
 separate API service to run.
 
-Run it locally:
+Run it locally (needs Go + Node):
 
 ```bash
-npm run serve          # build, then start the server on :8080
+npm run serve          # build SPA, then `go run ./server` on :8080
 ```
 
-Or with Docker (multi-stage build, production deps only, non-root, ~250 MB):
+Or with Docker (multi-stage build → distroless static image, non-root, ~15 MB):
 
 ```bash
 docker build -t wc-dashboard .
@@ -151,7 +151,8 @@ src/
   components/  Header, Nav, ThemeToggle, MatchCard, FeaturedMatch, StandingsTable, …
   pages/       Home, Results, Tables, Knockout
   styles/      tokens.css (themed), base.css, app.css
-server/        feed-cache.mjs (shared cache), index.mjs (production server)
+server/        *.go (production server: static serving + feed cache),
+               feed-cache.mjs (dev-server cache, imported by vite.config.ts)
 index.html     includes the pre-paint theme script
 Dockerfile · docker-compose.yml
 ```
