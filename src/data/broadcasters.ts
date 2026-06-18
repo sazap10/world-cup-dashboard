@@ -33,3 +33,13 @@ export const BROADCASTERS: Broadcaster[] = [
 export const BROADCASTERS_BY_ID: Record<string, Broadcaster> = Object.fromEntries(
   BROADCASTERS.map((b) => [b.id, b]),
 );
+
+// Used for fixtures the broadcast listings don't cover yet (games already
+// played and dropped from the schedule page, the final round of group games,
+// and the entire knockout bracket — whose participants aren't known).
+export const BROADCASTER_TBC: Broadcaster = {
+  id: 'tbc',
+  channel: 'Broadcaster TBC',
+  streaming: '',
+  watchUrl: '',
+};

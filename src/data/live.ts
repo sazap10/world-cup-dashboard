@@ -3,7 +3,7 @@
 // to a same-origin base ("/fd" by default) where the Vite dev proxy — or a
 // production proxy — injects the X-Auth-Token header.
 
-import { pickBroadcaster } from '../lib/broadcast';
+import { broadcasterForTeams } from '../lib/broadcast';
 import type { Dataset } from './source';
 import type { GroupId, Match, Stage, Team } from './types';
 
@@ -100,7 +100,9 @@ function mapMatch(m: FdMatch): Match {
     matchday: m.matchday ?? undefined,
     kickoff: m.utcDate,
     venue: m.venue ? { id: `v-${id}`, stadium: m.venue } : null,
-    broadcaster: pickBroadcaster(id),
+    // Match the live tie to the UK broadcast listings by team codes; ties the
+    // listings don't cover resolve to "Broadcaster TBC".
+    broadcaster: broadcasterForTeams(home, away),
     home,
     away,
     result,
