@@ -55,8 +55,11 @@ export function MatchFilterBar({ matches, filter, team, onFilter, onTeam, label 
       if (TEAMS_BY_CODE[m.home]) codes.add(m.home);
       if (TEAMS_BY_CODE[m.away]) codes.add(m.away);
     }
+    // Keep the active selection present even if its last match in this view has
+    // dropped out (matches refresh ~5s), so the controlled <select> stays valid.
+    if (team && TEAMS_BY_CODE[team]) codes.add(team);
     return [...codes].map((c) => TEAMS_BY_CODE[c]).sort((a, b) => a.name.localeCompare(b.name));
-  }, [matches]);
+  }, [matches, team]);
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: a labelled group of filter controls is the correct ARIA pattern; no single semantic element fits
