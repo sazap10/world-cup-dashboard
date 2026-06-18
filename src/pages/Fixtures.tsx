@@ -5,10 +5,11 @@ import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/headings';
 import { MatchCard } from '../components/MatchCard';
 import { GROUP_IDS } from '../data/teams';
+import type { GroupId } from '../data/types';
 import { groupByDay } from '../lib/matches';
 import { relativeDayLabel } from '../lib/time';
 
-type Filter = 'all' | 'group' | 'knockout' | string;
+type Filter = 'all' | 'group' | 'knockout' | GroupId;
 
 export function Fixtures() {
   const { upcoming, live, nowMs } = useTournament();
@@ -35,12 +36,18 @@ export function Fixtures() {
 
       {/* biome-ignore lint/a11y/useSemanticElements: a labelled group of filter controls is the correct ARIA pattern; no single semantic element fits */}
       <div className="filterbar" role="group" aria-label="Filter fixtures">
-        <button type="button" className={chip(filter === 'all')} onClick={() => setFilter('all')}>
+        <button
+          type="button"
+          className={chip(filter === 'all')}
+          aria-pressed={filter === 'all'}
+          onClick={() => setFilter('all')}
+        >
           All
         </button>
         <button
           type="button"
           className={chip(filter === 'group')}
+          aria-pressed={filter === 'group'}
           onClick={() => setFilter('group')}
         >
           Group stage
@@ -48,13 +55,20 @@ export function Fixtures() {
         <button
           type="button"
           className={chip(filter === 'knockout')}
+          aria-pressed={filter === 'knockout'}
           onClick={() => setFilter('knockout')}
         >
           Knockout
         </button>
         <span className="filterbar__div" aria-hidden="true" />
         {GROUP_IDS.map((g) => (
-          <button type="button" key={g} className={chip(filter === g)} onClick={() => setFilter(g)}>
+          <button
+            type="button"
+            key={g}
+            className={chip(filter === g)}
+            aria-pressed={filter === g}
+            onClick={() => setFilter(g)}
+          >
             {g}
           </button>
         ))}
@@ -63,7 +77,11 @@ export function Fixtures() {
       {days.length === 0 ? (
         <EmptyState
           title="No upcoming fixtures"
-          body="Every match in this view has kicked off. Check the results for full-time scores."
+          body={
+            live.length > 0
+              ? 'Every remaining match in this view is underway. Follow them live on the home page.'
+              : 'Every match in this view has kicked off. Check the results for full-time scores.'
+          }
         />
       ) : (
         days.map((day) => (
