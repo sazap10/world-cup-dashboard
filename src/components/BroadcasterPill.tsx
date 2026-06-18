@@ -16,7 +16,9 @@ interface Props {
 export function BroadcasterPill({ broadcaster: b, variant = 'watch' }: Props) {
   if (!b) return null;
 
-  if (variant === 'tag') {
+  // No confirmed broadcaster (TBC) or compact tag: render a plain, static label
+  // rather than a "watch" link that goes nowhere.
+  if (variant === 'tag' || !b.watchUrl) {
     return (
       <span className="bcast bcast--tag">
         {playIcon}

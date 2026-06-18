@@ -1,4 +1,4 @@
-import { pickBroadcaster } from '../lib/broadcast';
+import { broadcasterForTeams, realFixtureFor } from '../lib/broadcast';
 import { GROUP_IDS, teamsInGroup } from './teams';
 import type { Match, Score, Stage } from './types';
 import { VENUES } from './venues';
@@ -41,24 +41,115 @@ function seededScore(matchId: string): Score {
 }
 
 // ---------------------------------------------------------------------------
-// Group stage: 12 groups × round-robin over 3 matchdays = 72 matches.
+// Group stage: 12 groups × round-robin = 6 ties each, 72 matches total.
+//
+// A 4-team round-robin splits into exactly three rounds, each a perfect pairing
+// where every team plays once (the unique 1-factorisation of K4). Real
+// matchdays are exactly these rounds, so we group ties by round, then order the
+// three rounds by their earliest kickoff to label them Matchday 1–3.
+//
+// Where the broadcast listings cover a tie (see REAL_GROUP_FIXTURES), we use
+// its real home/away order, kickoff, and channel. Ties the source doesn't cover
+// (already played, or not yet listed) get a "Broadcaster TBC" placeholder and a
+// synthesised kickoff anchored to their round's known game (or, for a fully
+// unlisted round, after the group's last known game).
 // ---------------------------------------------------------------------------
-const PAIRINGS: number[][][] = [
+const ROUNDS: [number, number][][] = [
   [
     [0, 1],
     [2, 3],
-  ], // matchday 1
+  ],
   [
     [0, 2],
-    [3, 1],
-  ], // matchday 2
+    [1, 3],
+  ],
   [
-    [3, 0],
+    [0, 3],
     [1, 2],
-  ], // matchday 3
+  ],
 ];
 
-const SLOT_HOURS = [16, 18, 20, 22]; // UTC kickoff slots
+const HOUR_MS = 3600 * 1000;
+
+function isoUtc(date: Date): string {
+  return `${date.toISOString().slice(0, 19)}Z`;
+}
+
+interface BuiltTie {
+  home: string;
+  away: string;
+  kickoff: string;
+}
+
+function buildGroupStage(): Match[] {
+  const matches: Match[] = [];
+  let venueCursor = 0;
+
+  GROUP_IDS.forEach((group, gIndex) => {
+    const teams = teamsInGroup(group); // 4 teams
+
+    const rounds: BuiltTie[][] = ROUNDS.map((pairs) =>
+      pairs.map(([h, a]) => {
+        const real = realFixtureFor(teams[h].code, teams[a].code);
+        return real
+          ? { home: real.home, away: real.away, kickoff: real.kickoff }
+          : { home: teams[h].code, away: teams[a].code, kickoff: '' };
+      }),
+    );
+
+    // Fill in synthesised kickoffs for TBC ties so every tie has a time.
+    const allKnown = rounds
+      .flat()
+      .map((t) => t.kickoff)
+      .filter(Boolean)
+      .sort();
+    const groupAnchor = allKnown.length
+      ? new Date(allKnown[allKnown.length - 1])
+      : new Date(`2026-06-${pad(11 + Math.floor(gIndex / 2))}T18:00:00Z`);
+    for (const round of rounds) {
+      const knownInRound = round
+        .map((t) => t.kickoff)
+        .filter(Boolean)
+        .sort();
+      for (const tie of round) {
+        if (tie.kickoff) continue;
+        const base = knownInRound.length
+          ? new Date(new Date(knownInRound[0]).getTime() + 3 * HOUR_MS)
+          : new Date(groupAnchor.getTime() + 24 * HOUR_MS);
+        tie.kickoff = isoUtc(base);
+      }
+    }
+
+    // Order rounds by earliest kickoff → chronological Matchday 1–3 labels.
+    rounds.sort((a, b) => earliest(a).localeCompare(earliest(b)));
+    rounds.forEach((round, mdIndex) => {
+      const matchday = mdIndex + 1;
+      round.sort((x, y) => x.kickoff.localeCompare(y.kickoff));
+      round.forEach((tie, i) => {
+        const id = `G-${group}-${matchday}-${i + 1}`;
+        matches.push({
+          id,
+          stage: 'group',
+          group,
+          matchday,
+          kickoff: tie.kickoff,
+          venue: VENUES[venueCursor++ % VENUES.length],
+          broadcaster: broadcasterForTeams(tie.home, tie.away),
+          home: tie.home,
+          away: tie.away,
+          result: seededScore(id),
+          roundLabel: `Group ${group} · Matchday ${matchday}`,
+        });
+      });
+    });
+  });
+
+  return matches;
+}
+
+function earliest(round: BuiltTie[]): string {
+  return round.map((t) => t.kickoff).sort()[0];
+}
 
 function pad(n: number): string {
   return n.toString().padStart(2, '0');
@@ -68,43 +159,6 @@ function pad(n: number): string {
 function juneKickoff(day: number, hour: number): string {
   if (day <= 30) return `2026-06-${pad(day)}T${pad(hour)}:00:00Z`;
   return `2026-07-${pad(day - 30)}T${pad(hour)}:00:00Z`;
-}
-
-function buildGroupStage(): Match[] {
-  const matches: Match[] = [];
-  let venueCursor = 0;
-
-  GROUP_IDS.forEach((group, gIndex) => {
-    const teams = teamsInGroup(group); // 4 teams, draw order
-    const md1Day = 11 + Math.floor(gIndex / 2); // groups staggered Jun 11–16
-    const matchdayDay = [md1Day, md1Day + 5, md1Day + 9];
-
-    PAIRINGS.forEach((dayPairs, mdIndex) => {
-      const matchday = mdIndex + 1;
-      const day = matchdayDay[mdIndex];
-
-      dayPairs.forEach(([h, a], i) => {
-        const hour = SLOT_HOURS[(gIndex + mdIndex + i * 2) % SLOT_HOURS.length];
-        const id = `G-${group}-${matchday}-${i + 1}`;
-
-        matches.push({
-          id,
-          stage: 'group',
-          group,
-          matchday,
-          kickoff: juneKickoff(day, hour),
-          venue: VENUES[venueCursor++ % VENUES.length],
-          broadcaster: pickBroadcaster(id),
-          home: teams[h].code,
-          away: teams[a].code,
-          result: seededScore(id),
-          roundLabel: `Group ${group} · Matchday ${matchday}`,
-        });
-      });
-    });
-  });
-
-  return matches;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +244,9 @@ function buildKnockout(): Match[] {
     stage,
     kickoff: juneKickoff(day, hour),
     venue: VENUES[vIndex % VENUES.length],
-    broadcaster: pickBroadcaster(id),
+    // Knockout ties aren't in the broadcast listings yet (teams undetermined),
+    // so these resolve to "Broadcaster TBC".
+    broadcaster: broadcasterForTeams(home, away),
     home,
     away,
     result: null,
