@@ -60,8 +60,8 @@ export function Home() {
         <section className="upcoming" aria-label="Upcoming fixtures">
           <div className="upcoming__head">
             <SectionLabel>Upcoming fixtures</SectionLabel>
-            <Link className="link-quiet" to="/knockout">
-              Knockout bracket →
+            <Link className="link-quiet" to="/fixtures">
+              All fixtures →
             </Link>
           </div>
 

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { MobileNav } from './components/Nav';
+import { Fixtures } from './pages/Fixtures';
 import { Home } from './pages/Home';
 import { Knockout } from './pages/Knockout';
 import { Results } from './pages/Results';
@@ -18,6 +19,7 @@ export function App() {
       <main id="main" className="main" key={location.pathname}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/fixtures" element={<Fixtures />} />
           <Route path="/results" element={<Results />} />
           <Route path="/tables" element={<Tables />} />
           <Route path="/knockout" element={<Knockout />} />
