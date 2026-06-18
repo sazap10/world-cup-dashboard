@@ -98,10 +98,15 @@ func loadAssets(distDir string) (*staticServer, error) {
 }
 
 // serve resolves an exact file, else falls back to index.html for client-side
-// routes (extensionless GET/HEAD paths like /tables, /knockout). A missing path
-// that looks like a file (has an extension) is a genuine 404 — matching sirv's
+// routes (extensionless paths like /tables, /knockout). A missing path that
+// looks like a file (has an extension) is a genuine 404 — matching sirv's
 // single-page behaviour, so /assets/missing.js 404s rather than returning HTML.
+// Only GET/HEAD are served; other methods 404 like the previous sirv server.
 func (ss *staticServer) serve(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		notFound(w, r)
+		return
+	}
 	urlPath := path.Clean(r.URL.Path)
 	if urlPath == "/" {
 		urlPath = "/index.html"
@@ -110,11 +115,14 @@ func (ss *staticServer) serve(w http.ResponseWriter, r *http.Request) {
 		ss.send(w, r, a)
 		return
 	}
-	isNavigation := r.Method == http.MethodGet || r.Method == http.MethodHead
-	if isNavigation && path.Ext(urlPath) == "" && ss.index != nil {
+	if path.Ext(urlPath) == "" && ss.index != nil {
 		ss.send(w, r, ss.index)
 		return
 	}
+	notFound(w, r)
+}
+
+func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusNotFound)
 	if r.Method != http.MethodHead {
@@ -156,19 +164,46 @@ func (ss *staticServer) send(w http.ResponseWriter, r *http.Request, a *asset) {
 	}
 }
 
-// acceptsEncoding reports whether the Accept-Encoding header lists enc as a
-// token (ignoring q-values), so "br" doesn't spuriously match other values.
+// acceptsEncoding reports whether the Accept-Encoding header permits enc,
+// honouring q-values (an explicit q=0 disables an encoding) and the "*"
+// wildcard. An exact match wins over the wildcard; "br;q=0" is a refusal.
 func acceptsEncoding(header, enc string) bool {
+	wildcard, wildcardSet := false, false
 	for _, part := range strings.Split(header, ",") {
-		token := strings.TrimSpace(part)
-		if i := strings.IndexByte(token, ';'); i >= 0 {
-			token = strings.TrimSpace(token[:i])
+		name, q := parseEncoding(part)
+		if name == "" {
+			continue
 		}
-		if strings.EqualFold(token, enc) {
-			return true
+		if strings.EqualFold(name, enc) {
+			return q > 0
+		}
+		if name == "*" {
+			wildcard, wildcardSet = q > 0, true
 		}
 	}
+	if wildcardSet {
+		return wildcard
+	}
 	return false
+}
+
+// parseEncoding splits one Accept-Encoding element into its coding name and
+// q-value (defaulting to 1 when absent or unparseable).
+func parseEncoding(part string) (name string, q float64) {
+	token := strings.TrimSpace(part)
+	q = 1
+	if i := strings.IndexByte(token, ';'); i >= 0 {
+		for _, p := range strings.Split(token[i+1:], ";") {
+			p = strings.TrimSpace(p)
+			if v, ok := strings.CutPrefix(p, "q="); ok {
+				if parsed, err := strconv.ParseFloat(strings.TrimSpace(v), 64); err == nil {
+					q = parsed
+				}
+			}
+		}
+		token = strings.TrimSpace(token[:i])
+	}
+	return token, q
 }
 
 func brotliBytes(b []byte) []byte {
