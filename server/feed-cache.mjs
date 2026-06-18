@@ -1,6 +1,7 @@
 // Framework-agnostic server-side cache for the football-data.org matches feed.
-// Used by both the Vite dev server (vite.config.ts) and the production server
-// (server/index.mjs), so caching behaves identically in dev and prod.
+// Used by the Vite dev server (vite.config.ts). The production server is a Go
+// binary (server/feed_cache.go) that mirrors this logic, so caching behaves
+// identically in dev and prod.
 //
 // The upstream API is fetched at most once per TTL window; every client is
 // served from that single copy. Concurrent callers share one in-flight fetch
