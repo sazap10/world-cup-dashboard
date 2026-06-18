@@ -4,17 +4,15 @@ import { useTournament } from '../app/useTournament';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/headings';
 import { MatchCard } from '../components/MatchCard';
-import { GROUP_IDS } from '../data/teams';
-import type { GroupId } from '../data/types';
+import { filterMatches, type MatchFilter, MatchFilterBar } from '../components/MatchFilterBar';
 import { groupByDay } from '../lib/matches';
 import { formatDayLong } from '../lib/time';
-
-type Filter = 'all' | 'group' | 'knockout' | GroupId;
 
 export function Results() {
   const { finished, live } = useTournament();
   const { tz } = useTimezone();
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter] = useState<MatchFilter>('all');
+  const [team, setTeam] = useState('');
 
   // Most recent first.
   const played = useMemo(
@@ -22,12 +20,7 @@ export function Results() {
     [finished],
   );
 
-  const filtered = useMemo(() => {
-    if (filter === 'all') return played;
-    if (filter === 'knockout') return played.filter((m) => m.stage !== 'group');
-    if (filter === 'group') return played.filter((m) => m.stage === 'group');
-    return played.filter((m) => m.group === filter);
-  }, [played, filter]);
+  const filtered = useMemo(() => filterMatches(played, filter, team), [played, filter, team]);
 
   // Group by day, newest day first.
   const days = useMemo(() => groupByDay(filtered, tz).reverse(), [filtered, tz]);
@@ -40,45 +33,14 @@ export function Results() {
         showZone
       />
 
-      {/* biome-ignore lint/a11y/useSemanticElements: a labelled group of filter controls is the correct ARIA pattern; no single semantic element fits */}
-      <div className="filterbar" role="group" aria-label="Filter results">
-        <button
-          type="button"
-          className={chip(filter === 'all')}
-          aria-pressed={filter === 'all'}
-          onClick={() => setFilter('all')}
-        >
-          All
-        </button>
-        <button
-          type="button"
-          className={chip(filter === 'group')}
-          aria-pressed={filter === 'group'}
-          onClick={() => setFilter('group')}
-        >
-          Group stage
-        </button>
-        <button
-          type="button"
-          className={chip(filter === 'knockout')}
-          aria-pressed={filter === 'knockout'}
-          onClick={() => setFilter('knockout')}
-        >
-          Knockout
-        </button>
-        <span className="filterbar__div" aria-hidden="true" />
-        {GROUP_IDS.map((g) => (
-          <button
-            type="button"
-            key={g}
-            className={chip(filter === g)}
-            aria-pressed={filter === g}
-            onClick={() => setFilter(g)}
-          >
-            {g}
-          </button>
-        ))}
-      </div>
+      <MatchFilterBar
+        matches={played}
+        filter={filter}
+        team={team}
+        onFilter={setFilter}
+        onTeam={setTeam}
+        label="Filter results"
+      />
 
       {days.length === 0 ? (
         <EmptyState
@@ -102,8 +64,4 @@ export function Results() {
       )}
     </div>
   );
-}
-
-function chip(active: boolean): string {
-  return `chip${active ? ' chip--active' : ''}`;
 }
