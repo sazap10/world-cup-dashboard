@@ -1,5 +1,5 @@
 import { BROADCASTER_TBC, BROADCASTERS_BY_ID } from '../data/broadcasters';
-import type { Broadcaster } from '../data/types';
+import type { Broadcaster, GroupId } from '../data/types';
 
 // UK free-to-air broadcast listings for the FIFA World Cup 2026, transcribed
 // from live-footballontv.com. That page lists only upcoming fixtures, so this
@@ -10,7 +10,7 @@ import type { Broadcaster } from '../data/types';
 // Kickoffs are converted from UK local time (BST, UTC+1 in June) to UTC.
 // `channel` is a broadcaster id from src/data/broadcasters.ts.
 export interface RealFixture {
-  group: string;
+  group: GroupId;
   /** Listed home/away order from the source. */
   home: string;
   away: string;

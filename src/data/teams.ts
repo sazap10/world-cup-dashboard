@@ -32,7 +32,7 @@ export const TEAMS: Team[] = [
   { code: 'GER', name: 'Germany', flag: '🇩🇪', group: 'E', confederation: 'UEFA' },
   { code: 'CIV', name: "Côte d'Ivoire", flag: '🇨🇮', group: 'E', confederation: 'CAF' },
   { code: 'ECU', name: 'Ecuador', flag: '🇪🇨', group: 'E', confederation: 'CONMEBOL' },
-  { code: 'CUW', name: 'Curacao', flag: '🇨🇼', group: 'E', confederation: 'CONCACAF' },
+  { code: 'CUW', name: 'Curaçao', flag: '🇨🇼', group: 'E', confederation: 'CONCACAF' },
 
   // Group F
   { code: 'NED', name: 'Netherlands', flag: '🇳🇱', group: 'F', confederation: 'UEFA' },
