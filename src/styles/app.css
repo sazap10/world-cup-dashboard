@@ -309,18 +309,29 @@
     right: 0;
     z-index: var(--z-sticky);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     background: var(--bg-blur);
     backdrop-filter: saturate(160%) blur(14px);
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
+  /* Mask the gap Firefox Android leaves below a fixed bottom bar when its
+     dynamic toolbar retracts, by extending an opaque fill past the bar. */
+  .mobile-nav::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: var(--bg);
+  }
   .mobile-nav__item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: var(--space-2) 0 var(--space-3);
+    gap: 2px;
+    padding: var(--space-2) 0;
     font-size: var(--text-2xs);
     font-weight: 500;
     color: var(--muted);
