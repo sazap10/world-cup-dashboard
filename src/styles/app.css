@@ -76,9 +76,35 @@
   color: var(--muted);
   white-space: nowrap;
 }
+.src-badge:hover {
+  border-color: var(--border-strong);
+}
 .src-badge--live {
   color: var(--ink);
   border-color: var(--accent-line);
+}
+/* Keep the live identity on hover — brighten the accent rather than letting the
+   generic hover rule grey the border (higher specificity than --live alone). */
+.src-badge--live:hover {
+  border-color: var(--accent);
+}
+
+/* Popover holding the data-source explanation (top layer, light-dismiss). */
+.src-badge__pop {
+  position: fixed;
+  inset: auto var(--space-4) auto auto;
+  top: 64px;
+  max-width: 19rem;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.45;
 }
 .src-badge__dot {
   width: 7px;
@@ -93,7 +119,12 @@
   animation: live-pulse 1.4s var(--ease-out) infinite;
 }
 @media (max-width: 600px) {
+  /* Collapse the badge to its dot to save header width, but keep it present and
+     tappable so the data-source state (and its popover) survives on phones. */
   .src-badge {
+    padding: var(--space-2);
+  }
+  .src-badge__text {
     display: none;
   }
   /* Tighten the header so the timezone select + theme toggle always fit.
@@ -187,6 +218,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  height: 100%; /* whole 46px strip is the hit target, not just the glyph */
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--muted);
@@ -309,25 +341,53 @@
     right: 0;
     z-index: var(--z-sticky);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     background: var(--bg-blur);
     backdrop-filter: saturate(160%) blur(14px);
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
+  /* Mask the gap Firefox Android leaves below a fixed bottom bar when its
+     dynamic toolbar retracts, by extending an opaque fill past the bar. */
+  .mobile-nav::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 100dvh; /* dvh tracks Firefox's dynamic toolbar; matches base.css */
+    pointer-events: none; /* purely decorative mask — never intercept taps/scroll */
+    background: var(--bg);
+  }
   .mobile-nav__item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: var(--space-2) 0 var(--space-3);
+    gap: 2px;
+    padding: var(--space-2) 0;
     font-size: var(--text-2xs);
     font-weight: 500;
     color: var(--muted);
     transition: color var(--dur-fast);
   }
+  /* Active tab is signalled by THREE redundant cues, never colour alone:
+     accent colour + 600 weight + a top accent bar (the bottom bar's answer to
+     the desktop tab underline). Keeps "you are here" legible without colour. */
   .mobile-nav__item.is-active {
     color: var(--accent);
+    font-weight: 600;
+  }
+  .mobile-nav__item.is-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 26px;
+    height: 2px;
+    border-radius: 0 0 2px 2px;
+    background: var(--accent);
+    transform: translateX(-50%);
   }
 }
 
