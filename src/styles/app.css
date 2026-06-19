@@ -83,6 +83,11 @@
   color: var(--ink);
   border-color: var(--accent-line);
 }
+/* Keep the live identity on hover — brighten the accent rather than letting the
+   generic hover rule grey the border (higher specificity than --live alone). */
+.src-badge--live:hover {
+  border-color: var(--accent);
+}
 
 /* Popover holding the data-source explanation (top layer, light-dismiss). */
 .src-badge__pop {
@@ -350,8 +355,7 @@
     top: 100%;
     left: 0;
     right: 0;
-    height: 100vh;
-    height: 100dvh; /* tracks Firefox's dynamic toolbar; 100vh is the fallback */
+    height: 100dvh; /* dvh tracks Firefox's dynamic toolbar; matches base.css */
     pointer-events: none; /* purely decorative mask — never intercept taps/scroll */
     background: var(--bg);
   }
