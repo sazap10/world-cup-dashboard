@@ -38,18 +38,31 @@ function LiveTicker() {
 function DataSourceBadge() {
   const { source, refreshing } = useData();
   const live = source === 'live';
+  const label = live ? 'Live data' : 'Sample data';
+  const explanation = live
+    ? 'Showing live data from football-data.org.'
+    : 'Showing built-in sample data. Add a football-data.org API key to go live.';
   return (
-    <span
-      className={`src-badge${live ? ' src-badge--live' : ''}`}
-      title={
-        live
-          ? 'Showing live data from football-data.org'
-          : 'Showing built-in sample data. Add a football-data.org API key to go live.'
-      }
-    >
-      <span className={`src-badge__dot${refreshing ? ' is-refreshing' : ''}`} aria-hidden="true" />
-      {live ? 'Live data' : 'Sample data'}
-    </span>
+    <>
+      {/* Explanation lives in a popover (keyboard- and touch-reachable), not a
+          title tooltip; the dot stays visible on mobile so the data-source
+          state is never fully hidden. */}
+      <button
+        type="button"
+        className={`src-badge${live ? ' src-badge--live' : ''}`}
+        popoverTarget="src-badge-info"
+        aria-label={`Data source: ${label}. ${explanation}`}
+      >
+        <span
+          className={`src-badge__dot${refreshing ? ' is-refreshing' : ''}`}
+          aria-hidden="true"
+        />
+        <span className="src-badge__text">{label}</span>
+      </button>
+      <div id="src-badge-info" popover="auto" role="tooltip" className="src-badge__pop">
+        {explanation}
+      </div>
+    </>
   );
 }
 
