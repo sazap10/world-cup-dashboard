@@ -70,6 +70,12 @@ export interface Match {
    */
   statusOverride?: MatchStatus;
   minuteOverride?: number | null;
+  /**
+   * True when the feed reports the match as PAUSED (the half-time break).
+   * `statusOverride` collapses PAUSED into `live`, so this preserves the
+   * distinction needed to show "HT". Absent for seed data.
+   */
+  halftimeOverride?: boolean;
 }
 
 /** A match plus its clock-derived state, for rendering. */
@@ -79,6 +85,8 @@ export interface MatchView extends Match {
   displayScore: Score | null;
   /** Simulated minute for live matches (1–90+). */
   minute: number | null;
+  /** Display string for the live minute, e.g. "67’" or "HT". Null when not live. */
+  minuteLabel: string | null;
 }
 
 export interface Standing {

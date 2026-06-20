@@ -65,7 +65,7 @@ export function MatchCard({ match, showRound = true }: Props) {
             <span className="status-live">
               <span className="live-dot" aria-hidden="true" />
               LIVE
-              <span className="status-live__min mono">{match.minute}&rsquo;</span>
+              <span className="status-live__min mono">{match.minuteLabel}</span>
             </span>
           )}
           {match.status === 'finished' && <span className="status-ft">Full time</span>}

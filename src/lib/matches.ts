@@ -43,11 +43,20 @@ export function effectiveStatus(match: Match, nowMs: number): MatchStatus {
   return match.statusOverride ?? statusOf(match, nowMs);
 }
 
-/** Simulated current minute for a live match (1–90, then "90+"). */
-function liveMinute(match: Match, nowMs: number): number {
+/**
+ * Simulated current minute for a live match when the feed omits a real one.
+ * Models the match clock in phases rather than linearly stretching the
+ * 105-minute window onto 90: the broadcast clock pauses for the ~15-minute
+ * half-time, so a linear map runs several minutes ahead all through the second
+ * half (e.g. ~89' shown while the TV reads ~81'). First half is wall 0–45,
+ * half-time holds at 45 across wall 45–60, second half is 45–90 over wall
+ * 60–105 — matching LIVE_DURATION_MS so it still reaches 90 at the window's end.
+ */
+function liveMinute(match: Match, nowMs: number): { minute: number; halftime: boolean } {
   const elapsed = (nowMs - Date.parse(match.kickoff)) / 60000;
-  // Compress the 105-minute real window onto a 90-minute clock.
-  return Math.max(1, Math.min(90, Math.round((elapsed / 105) * 90)));
+  if (elapsed < 45) return { minute: Math.max(1, Math.round(elapsed)), halftime: false };
+  if (elapsed < 60) return { minute: 45, halftime: true };
+  return { minute: Math.min(90, Math.round(45 + (elapsed - 60))), halftime: false };
 }
 
 /**
@@ -79,11 +88,29 @@ export function toView(match: Match, nowMs: number): MatchView {
   // Live data overrides the clock with the API's reported status/minute.
   const liveSource = match.statusOverride !== undefined;
   const status = match.statusOverride ?? statusOf(match, nowMs);
-  const minute = status === 'live' ? (match.minuteOverride ?? liveMinute(match, nowMs)) : null;
+  // `minute` stays numeric for the score reveal; `minuteLabel` is the display
+  // string ("HT" during the half-time hold, otherwise e.g. "67’").
+  let minute: number | null = null;
+  let minuteLabel: string | null = null;
+  if (status === 'live') {
+    if (match.halftimeOverride) {
+      // Feed reports the half-time break (PAUSED) outright.
+      minute = match.minuteOverride ?? 45;
+      minuteLabel = 'HT';
+    } else if (match.minuteOverride != null) {
+      minute = match.minuteOverride;
+      minuteLabel = `${minute}’`;
+    } else {
+      const sim = liveMinute(match, nowMs);
+      minute = sim.minute;
+      minuteLabel = sim.halftime ? 'HT' : `${sim.minute}’`;
+    }
+  }
   return {
     ...match,
     status,
     minute,
+    minuteLabel,
     displayScore: displayScore(match, status, minute, liveSource),
   };
 }

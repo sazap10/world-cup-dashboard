@@ -126,6 +126,7 @@ function mapMatch(m: FdMatch): Match {
     roundLabel,
     statusOverride: mapStatus(m.status),
     minuteOverride: typeof m.minute === 'number' ? m.minute : null,
+    halftimeOverride: m.status === 'PAUSED',
   };
 }
 
