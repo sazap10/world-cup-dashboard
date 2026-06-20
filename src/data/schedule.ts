@@ -1,8 +1,15 @@
 import { broadcasterForTeams, realFixtureFor } from '../lib/broadcast';
 import { venueIdForKnockoutMatch, venueIdForPair } from './match-venues';
 import { GROUP_IDS, teamsInGroup } from './teams';
-import type { Match, Score, Stage } from './types';
+import type { Match, Score, Stage, Venue } from './types';
 import { VENUES, VENUES_BY_ID } from './venues';
+
+/** Resolve a venue id to its venue, throwing on an unknown id so data typos surface. */
+function venueById(id: string): Venue {
+  const venue = VENUES_BY_ID[id];
+  if (!venue) throw new Error(`Unknown venue id: ${id}`);
+  return venue;
+}
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-randomness so the tournament looks the same every load.
@@ -128,11 +135,11 @@ function buildGroupStage(): Match[] {
       round.sort((x, y) => x.kickoff.localeCompare(y.kickoff));
       round.forEach((tie, i) => {
         const id = `G-${group}-${matchday}-${i + 1}`;
-        // Real FIFA venue for this pairing; fall back to a rotation only if the
+        // Real FIFA venue for this pairing; fall back to a rotation only when the
         // tie isn't in the published schedule (shouldn't happen for real draws).
+        // A known-but-unresolvable id throws via venueById rather than masking the bug.
         const realVenueId = venueIdForPair(tie.home, tie.away);
-        const venue =
-          (realVenueId && VENUES_BY_ID[realVenueId]) || VENUES[venueCursor++ % VENUES.length];
+        const venue = realVenueId ? venueById(realVenueId) : VENUES[venueCursor++ % VENUES.length];
         matches.push({
           id,
           stage: 'group',
@@ -245,21 +252,24 @@ function buildKnockout(): Match[] {
     away: string,
     day: number,
     hour: number,
-  ): Match => ({
-    id,
-    stage,
-    kickoff: juneKickoff(day, hour),
+  ): Match => {
     // Real FIFA venue, keyed by match number. Ids run K-M73…K-M102; the final is
     // K-M103 here but is FIFA match 104 (there's no third-place play-off in this app).
-    venue: VENUES_BY_ID[venueIdForKnockoutMatch(knockoutMatchNumber(id)) ?? ''] ?? null,
-    // Knockout ties aren't in the broadcast listings yet (teams undetermined),
-    // so these resolve to "Broadcaster TBC".
-    broadcaster: broadcasterForTeams(home, away),
-    home,
-    away,
-    result: null,
-    roundLabel,
-  });
+    const venueId = venueIdForKnockoutMatch(knockoutMatchNumber(id));
+    return {
+      id,
+      stage,
+      kickoff: juneKickoff(day, hour),
+      venue: venueId ? venueById(venueId) : null,
+      // Knockout ties aren't in the broadcast listings yet (teams undetermined),
+      // so these resolve to "Broadcaster TBC".
+      broadcaster: broadcasterForTeams(home, away),
+      home,
+      away,
+      result: null,
+      roundLabel,
+    };
+  };
 
   R32_TEMPLATES.forEach((t) => {
     out.push(make(`K-${t.id}`, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour));
