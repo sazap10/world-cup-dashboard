@@ -1,6 +1,6 @@
 import { GROUP_IDS } from '../data/teams';
 import type { GroupId, Match, Standing, Team } from '../data/types';
-import { byKickoff, statusOf } from './matches';
+import { byKickoff, effectiveStatus } from './matches';
 
 interface Mutable {
   standing: Standing;
@@ -42,7 +42,7 @@ export function standingsForGroup(
         m.stage === 'group' &&
         m.group === group &&
         m.result &&
-        statusOf(m, nowMs) === 'finished' &&
+        effectiveStatus(m, nowMs) === 'finished' &&
         table.has(m.home) &&
         table.has(m.away),
     )

@@ -33,6 +33,16 @@ export function statusOf(match: Match, nowMs: number): MatchStatus {
   return 'finished';
 }
 
+/**
+ * The match's true status: the API's reported status when present (live data),
+ * otherwise the clock-derived one (seed data). Prefer this over `statusOf` for
+ * anything that gates on a result being final — live data can be FINISHED before
+ * the 105-minute clock window elapses.
+ */
+export function effectiveStatus(match: Match, nowMs: number): MatchStatus {
+  return match.statusOverride ?? statusOf(match, nowMs);
+}
+
 /** Simulated current minute for a live match (1–90, then "90+"). */
 function liveMinute(match: Match, nowMs: number): number {
   const elapsed = (nowMs - Date.parse(match.kickoff)) / 60000;
