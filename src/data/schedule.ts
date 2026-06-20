@@ -1,7 +1,15 @@
 import { broadcasterForTeams, realFixtureFor } from '../lib/broadcast';
+import { venueIdForKnockoutMatch, venueIdForPair } from './match-venues';
 import { GROUP_IDS, teamsInGroup } from './teams';
-import type { Match, Score, Stage } from './types';
-import { VENUES } from './venues';
+import type { Match, Score, Stage, Venue } from './types';
+import { VENUES, VENUES_BY_ID } from './venues';
+
+/** Resolve a venue id to its venue, throwing on an unknown id so data typos surface. */
+function venueById(id: string): Venue {
+  const venue = VENUES_BY_ID[id];
+  if (!venue) throw new Error(`Unknown venue id: ${id}`);
+  return venue;
+}
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-randomness so the tournament looks the same every load.
@@ -127,13 +135,18 @@ function buildGroupStage(): Match[] {
       round.sort((x, y) => x.kickoff.localeCompare(y.kickoff));
       round.forEach((tie, i) => {
         const id = `G-${group}-${matchday}-${i + 1}`;
+        // Real FIFA venue for this pairing; fall back to a rotation only when the
+        // tie isn't in the published schedule (shouldn't happen for real draws).
+        // A known-but-unresolvable id throws via venueById rather than masking the bug.
+        const realVenueId = venueIdForPair(tie.home, tie.away);
+        const venue = realVenueId ? venueById(realVenueId) : VENUES[venueCursor++ % VENUES.length];
         matches.push({
           id,
           stage: 'group',
           group,
           matchday,
           kickoff: tie.kickoff,
-          venue: VENUES[venueCursor++ % VENUES.length],
+          venue,
           broadcaster: broadcasterForTeams(tie.home, tie.away),
           home: tie.home,
           away: tie.away,
@@ -155,6 +168,16 @@ function pad(n: number): string {
   return n.toString().padStart(2, '0');
 }
 
+/**
+ * FIFA match number for a knockout match id (K-M73…K-M103). The app labels the
+ * final K-M103 and has no third-place play-off, but FIFA's final is match 104,
+ * so remap it; all others pass through.
+ */
+function knockoutMatchNumber(id: string): number {
+  const n = Number(id.replace('K-M', ''));
+  return n === 103 ? 104 : n;
+}
+
 /** Build a June 2026 UTC ISO timestamp; days > 30 roll into July. */
 function juneKickoff(day: number, hour: number): string {
   if (day <= 30) return `2026-06-${pad(day)}T${pad(hour)}:00:00Z`;
@@ -174,36 +197,27 @@ interface KnockoutTemplate {
   away: string;
   day: number;
   hour: number;
-  venueIndex: number;
   broadcasterIndex: number;
 }
 
 // Round of 32 — pairings use group-position labels and "best third" slots.
 const R32_TEMPLATES: Omit<KnockoutTemplate, 'stage' | 'roundLabel'>[] = [
-  { id: 'M73', home: '1A', away: '2C', day: 28, hour: 16, venueIndex: 5, broadcasterIndex: 0 },
-  { id: 'M74', home: '1C', away: '2F', day: 28, hour: 20, venueIndex: 6, broadcasterIndex: 2 },
-  { id: 'M75', home: '1E', away: '3rd-1', day: 29, hour: 16, venueIndex: 7, broadcasterIndex: 1 },
-  { id: 'M76', home: '1F', away: '2E', day: 29, hour: 20, venueIndex: 8, broadcasterIndex: 3 },
-  { id: 'M77', home: '1I', away: '3rd-2', day: 29, hour: 22, venueIndex: 13, broadcasterIndex: 0 },
-  { id: 'M78', home: '1B', away: '3rd-3', day: 30, hour: 16, venueIndex: 4, broadcasterIndex: 2 },
-  { id: 'M79', home: '1K', away: '2L', day: 30, hour: 20, venueIndex: 9, broadcasterIndex: 1 },
-  { id: 'M80', home: '2A', away: '2B', day: 30, hour: 22, venueIndex: 2, broadcasterIndex: 3 },
-  { id: 'M81', home: '1D', away: '3rd-4', day: 31, hour: 16, venueIndex: 10, broadcasterIndex: 0 },
-  { id: 'M82', home: '1G', away: '3rd-5', day: 31, hour: 20, venueIndex: 11, broadcasterIndex: 2 },
-  { id: 'M83', home: '1H', away: '2J', day: 31, hour: 22, venueIndex: 0, broadcasterIndex: 1 },
-  { id: 'M84', home: '1J', away: '2H', day: 32, hour: 16, venueIndex: 1, broadcasterIndex: 3 },
-  { id: 'M85', home: '1L', away: '3rd-6', day: 32, hour: 20, venueIndex: 14, broadcasterIndex: 0 },
-  { id: 'M86', home: '2D', away: '2G', day: 32, hour: 22, venueIndex: 15, broadcasterIndex: 2 },
-  { id: 'M87', home: '2I', away: '2K', day: 33, hour: 16, venueIndex: 12, broadcasterIndex: 1 },
-  {
-    id: 'M88',
-    home: '3rd-7',
-    away: '3rd-8',
-    day: 33,
-    hour: 20,
-    venueIndex: 3,
-    broadcasterIndex: 3,
-  },
+  { id: 'M73', home: '1A', away: '2C', day: 28, hour: 16, broadcasterIndex: 0 },
+  { id: 'M74', home: '1C', away: '2F', day: 28, hour: 20, broadcasterIndex: 2 },
+  { id: 'M75', home: '1E', away: '3rd-1', day: 29, hour: 16, broadcasterIndex: 1 },
+  { id: 'M76', home: '1F', away: '2E', day: 29, hour: 20, broadcasterIndex: 3 },
+  { id: 'M77', home: '1I', away: '3rd-2', day: 29, hour: 22, broadcasterIndex: 0 },
+  { id: 'M78', home: '1B', away: '3rd-3', day: 30, hour: 16, broadcasterIndex: 2 },
+  { id: 'M79', home: '1K', away: '2L', day: 30, hour: 20, broadcasterIndex: 1 },
+  { id: 'M80', home: '2A', away: '2B', day: 30, hour: 22, broadcasterIndex: 3 },
+  { id: 'M81', home: '1D', away: '3rd-4', day: 31, hour: 16, broadcasterIndex: 0 },
+  { id: 'M82', home: '1G', away: '3rd-5', day: 31, hour: 20, broadcasterIndex: 2 },
+  { id: 'M83', home: '1H', away: '2J', day: 31, hour: 22, broadcasterIndex: 1 },
+  { id: 'M84', home: '1J', away: '2H', day: 32, hour: 16, broadcasterIndex: 3 },
+  { id: 'M85', home: '1L', away: '3rd-6', day: 32, hour: 20, broadcasterIndex: 0 },
+  { id: 'M86', home: '2D', away: '2G', day: 32, hour: 22, broadcasterIndex: 2 },
+  { id: 'M87', home: '2I', away: '2K', day: 33, hour: 16, broadcasterIndex: 1 },
+  { id: 'M88', home: '3rd-7', away: '3rd-8', day: 33, hour: 20, broadcasterIndex: 3 },
 ];
 
 // Later rounds reference the winners of earlier matches.
@@ -238,37 +252,41 @@ function buildKnockout(): Match[] {
     away: string,
     day: number,
     hour: number,
-    vIndex: number,
-  ): Match => ({
-    id,
-    stage,
-    kickoff: juneKickoff(day, hour),
-    venue: VENUES[vIndex % VENUES.length],
-    // Knockout ties aren't in the broadcast listings yet (teams undetermined),
-    // so these resolve to "Broadcaster TBC".
-    broadcaster: broadcasterForTeams(home, away),
-    home,
-    away,
-    result: null,
-    roundLabel,
-  });
+  ): Match => {
+    // Real FIFA venue, keyed by match number. Ids run K-M73…K-M102; the final is
+    // K-M103 here but is FIFA match 104 (there's no third-place play-off in this app).
+    const venueId = venueIdForKnockoutMatch(knockoutMatchNumber(id));
+    return {
+      id,
+      stage,
+      kickoff: juneKickoff(day, hour),
+      venue: venueId ? venueById(venueId) : null,
+      // Knockout ties aren't in the broadcast listings yet (teams undetermined),
+      // so these resolve to "Broadcaster TBC".
+      broadcaster: broadcasterForTeams(home, away),
+      home,
+      away,
+      result: null,
+      roundLabel,
+    };
+  };
 
   R32_TEMPLATES.forEach((t) => {
-    out.push(make(`K-${t.id}`, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour, t.venueIndex));
+    out.push(make(`K-${t.id}`, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour));
   });
 
   R16_PAIRS.forEach(([h, a], i) => {
     out.push(
-      make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16, i),
+      make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16),
     );
   });
   QF_PAIRS.forEach(([h, a], i) => {
-    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16, i + 4));
+    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16));
   });
   SF_PAIRS.forEach(([h, a], i) => {
-    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20, i + 8));
+    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20));
   });
-  out.push(make('K-M103', 'final', 'Final', 'W101', 'W102', 49, 19, 5));
+  out.push(make('K-M103', 'final', 'Final', 'W101', 'W102', 49, 19));
 
   return out;
 }
