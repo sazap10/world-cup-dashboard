@@ -1,6 +1,6 @@
 import { KNOCKOUT_MATCHES } from '../data/schedule';
 import { GROUP_IDS } from '../data/teams';
-import type { GroupId, Match, MatchStatus, Stage, Team } from '../data/types';
+import type { GroupId, Match, Stage, Team } from '../data/types';
 import { effectiveStatus } from './matches';
 import { type AllStandings, allStandings } from './standings';
 
@@ -197,7 +197,7 @@ function hydrateLiveKnockout(
     ...t,
     // Clear the seed's placeholder result — only live results should fill these.
     result: null,
-    statusOverride: 'upcoming' as MatchStatus,
+    statusOverride: 'upcoming',
     minuteOverride: null,
   }));
   const standings = allStandings(groupMatches, teams, nowMs);
@@ -223,8 +223,8 @@ function hydrateLiveKnockout(
       const flipped = live.home === b;
       tie.result =
         live.result && flipped ? { home: live.result.away, away: live.result.home } : live.result;
-      tie.statusOverride = live.statusOverride ?? 'upcoming';
-      tie.minuteOverride = live.minuteOverride ?? null;
+      tie.statusOverride = live.statusOverride;
+      tie.minuteOverride = live.minuteOverride;
       tie.kickoff = live.kickoff;
       tie.broadcaster = live.broadcaster;
       if (live.venue) tie.venue = live.venue;
