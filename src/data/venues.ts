@@ -21,3 +21,10 @@ export const VENUES: Venue[] = [
 ];
 
 export const VENUES_BY_ID: Record<string, Venue> = Object.fromEntries(VENUES.map((v) => [v.id, v]));
+
+/** Resolve a venue id to its venue, throwing on an unknown id so data typos surface. */
+export function venueById(id: string): Venue {
+  const venue = VENUES_BY_ID[id];
+  if (!venue) throw new Error(`Unknown venue id: ${id}`);
+  return venue;
+}

@@ -7,7 +7,7 @@ import { broadcasterForTeams } from '../lib/broadcast';
 import { venueIdForPair } from './match-venues';
 import type { Dataset } from './source';
 import type { GroupId, Match, Stage, Team, Venue } from './types';
-import { VENUES_BY_ID } from './venues';
+import { venueById } from './venues';
 
 // The app calls our own server-side cached endpoint, which fetches the upstream
 // football-data.org feed at most once per TTL and fans it out to all clients.
@@ -89,7 +89,7 @@ function mapVenue(m: FdMatch, stage: Stage, home: string, away: string): Venue |
   if (m.venue) return { id: `v-${m.id}`, stadium: m.venue };
   if (stage === 'group') {
     const id = venueIdForPair(home, away);
-    if (id) return VENUES_BY_ID[id] ?? null;
+    if (id) return venueById(id);
   }
   return null;
 }
