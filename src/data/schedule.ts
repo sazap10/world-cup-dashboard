@@ -41,6 +41,20 @@ function seededScore(matchId: string): Score {
   return { home: goals(), away: goals() };
 }
 
+/**
+ * A knockout scoreline. Same seeded distribution as the group stage, but a tie
+ * is broken deterministically so there is always a winner — the data model has
+ * no extra-time/penalty concept, so knockouts are treated as decided in normal
+ * time. This lets the bracket advance winners as each round's clock runs out.
+ */
+function seededKnockoutScore(matchId: string): Score {
+  const s = seededScore(matchId);
+  if (s.home !== s.away) return s;
+  return mulberry32(hashString(`${matchId}-ko`))() < 0.5
+    ? { home: s.home + 1, away: s.away }
+    : { home: s.home, away: s.away + 1 };
+}
+
 // ---------------------------------------------------------------------------
 // Group stage: 12 groups × round-robin = 6 ties each, 72 matches total.
 //
@@ -259,7 +273,9 @@ function buildKnockout(): Match[] {
       broadcaster: broadcasterForTeams(home, away),
       home,
       away,
-      result: null,
+      // Seeded so the bracket can advance winners as each round finishes; the
+      // clock keeps it hidden (shown as upcoming) until the tie's kickoff.
+      result: seededKnockoutScore(id),
       roundLabel,
     };
   };
