@@ -4,8 +4,10 @@
 // production proxy — injects the X-Auth-Token header.
 
 import { broadcasterForTeams } from '../lib/broadcast';
+import { venueIdForPair } from './match-venues';
 import type { Dataset } from './source';
-import type { GroupId, Match, Stage, Team } from './types';
+import type { GroupId, Match, Stage, Team, Venue } from './types';
+import { venueById } from './venues';
 
 // The app calls our own server-side cached endpoint, which fetches the upstream
 // football-data.org feed at most once per TTL and fans it out to all clients.
@@ -77,6 +79,21 @@ function mapStatus(s: string): Match['statusOverride'] {
   return 'upcoming';
 }
 
+/**
+ * Venue for a live match. The feed doesn't supply venues, so fall back to our
+ * hard-coded FIFA assignment: group ties are keyed by pairing, so they resolve
+ * once both teams are known. Knockout participants are TBD until results land,
+ * so those stay unresolved here (null → "Venue TBC") rather than mis-assigned.
+ */
+function mapVenue(m: FdMatch, stage: Stage, home: string, away: string): Venue | null {
+  if (m.venue) return { id: `v-${m.id}`, stadium: m.venue };
+  if (stage === 'group') {
+    const id = venueIdForPair(home, away);
+    if (id) return venueById(id);
+  }
+  return null;
+}
+
 function mapMatch(m: FdMatch): Match {
   const stage = STAGE_MAP[m.stage] ?? 'group';
   const group = parseGroup(m.group);
@@ -99,7 +116,7 @@ function mapMatch(m: FdMatch): Match {
     group,
     matchday: m.matchday ?? undefined,
     kickoff: m.utcDate,
-    venue: m.venue ? { id: `v-${id}`, stadium: m.venue } : null,
+    venue: mapVenue(m, stage, home, away),
     // Match the live tie to the UK broadcast listings by team codes; ties the
     // listings don't cover resolve to "Broadcaster TBC".
     broadcaster: broadcasterForTeams(home, away),

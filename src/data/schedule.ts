@@ -1,15 +1,8 @@
 import { broadcasterForTeams, realFixtureFor } from '../lib/broadcast';
 import { venueIdForKnockoutMatch, venueIdForPair } from './match-venues';
 import { GROUP_IDS, teamsInGroup } from './teams';
-import type { Match, Score, Stage, Venue } from './types';
-import { VENUES, VENUES_BY_ID } from './venues';
-
-/** Resolve a venue id to its venue, throwing on an unknown id so data typos surface. */
-function venueById(id: string): Venue {
-  const venue = VENUES_BY_ID[id];
-  if (!venue) throw new Error(`Unknown venue id: ${id}`);
-  return venue;
-}
+import type { Match, Score, Stage } from './types';
+import { VENUES, venueById } from './venues';
 
 // ---------------------------------------------------------------------------
 // Deterministic pseudo-randomness so the tournament looks the same every load.
