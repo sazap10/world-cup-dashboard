@@ -36,7 +36,7 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
           <span className="status-live status-live--lg">
             <span className="live-dot" aria-hidden="true" />
             LIVE
-            <span className="status-live__min mono">{match.minute}&rsquo;</span>
+            <span className="status-live__min mono">{match.minuteLabel}</span>
           </span>
         ) : match.status === 'finished' ? (
           <span className="status-ft">Full time</span>

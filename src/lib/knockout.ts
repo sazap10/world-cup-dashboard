@@ -225,6 +225,7 @@ function hydrateLiveKnockout(
         live.result && flipped ? { home: live.result.away, away: live.result.home } : live.result;
       tie.statusOverride = live.statusOverride;
       tie.minuteOverride = live.minuteOverride;
+      tie.halftimeOverride = live.halftimeOverride;
       tie.kickoff = live.kickoff;
       tie.broadcaster = live.broadcaster;
       if (live.venue) tie.venue = live.venue;
