@@ -98,10 +98,13 @@ export function standingsForGroup(
   // Once the group is over the ranking is definitive (the full tiebreaker chain,
   // goal difference included, has run), so the top two have qualified outright in
   // their final order — even where the clinch maths, conservative on goal
-  // difference, can't say so.
-  const groupComplete = !matches.some(
-    (m) => m.stage === 'group' && m.group === group && effectiveStatus(m, nowMs) !== 'finished',
-  );
+  // difference, can't say so. Require at least one fixture so an empty/partial
+  // dataset (no games for this group) isn't mistaken for a finished group, which
+  // would otherwise mark the name-sorted top two as qualified (mirrors
+  // groupFinished() in knockout.ts).
+  const groupGames = matches.filter((m) => m.stage === 'group' && m.group === group);
+  const groupComplete =
+    groupGames.length > 0 && groupGames.every((m) => effectiveStatus(m, nowMs) === 'finished');
   // A guaranteed winner (worst-case rank 1) is unique. When one exists, any other
   // team guaranteed top-2 must be the runner-up (the winner always takes 1st).
   const hasGuaranteedWinner = ranked.some((s) => worst.get(s.team.code) === 1);

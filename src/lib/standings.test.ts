@@ -297,6 +297,22 @@ describe('clinching a knockout place (qualified flag)', () => {
     expect(byCode(table, 'TD').clinchedRank).toBeNull();
   });
 
+  it('treats a group with no fixtures as undecided, not complete', () => {
+    // A partial/empty dataset has no games for the group. It must not be mistaken
+    // for a finished group — otherwise the name-sorted "top two" would be marked
+    // qualified and handed clinchedRank 1/2 off arbitrary ordering.
+    const teams = [
+      team('TA', 'Alpha', 'A'),
+      team('TB', 'Bravo', 'A'),
+      team('TC', 'Charlie', 'A'),
+      team('TD', 'Delta', 'A'),
+    ];
+
+    const table = standingsForGroup('A', [], teams, NOW);
+    expect(table.every((s) => s.qualified === false)).toBe(true);
+    expect(table.every((s) => s.clinchedRank === null)).toBe(true);
+  });
+
   it('does not lock a winner while two teams can still finish top on points', () => {
     // After one round TA leads, but with two games to go several teams can still
     // top the group, so no exact placing is guaranteed yet.
