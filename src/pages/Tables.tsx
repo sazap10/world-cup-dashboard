@@ -32,6 +32,9 @@ export function Tables() {
         <span className="legend__item">
           <span className="legend__swatch legend__swatch--p" /> In the best-third race
         </span>
+        <span className="legend__item">
+          <span className="standings__qual">Q</span> Clinched a knockout place
+        </span>
       </div>
 
       <div className="tables-grid">

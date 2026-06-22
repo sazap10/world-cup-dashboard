@@ -68,26 +68,31 @@ export function resolveSlot(
     return { team: null, label: 'To be decided', provisional: true };
   }
 
-  // Group position, e.g. "1A" or "2C".
+  // Group position, e.g. "1A" or "2C". Only name a team once it has clinched that
+  // exact placing — a team can lock up 1st before the group ends (head-to-head
+  // can guarantee it stays above rivals that could only draw level on points).
+  // Until a slot is guaranteed we show the placeholder, never a projection.
   const pos = /^([12])([A-L])$/.exec(occupant);
   if (pos) {
-    const rank = Number(pos[1]);
+    const rank = Number(pos[1]) as 1 | 2;
     const group = pos[2] as GroupId;
-    const team = standings.byGroup[group]?.[rank - 1]?.team ?? null;
-    const decided = groupFinished(matches, group, nowMs) && rank <= 2;
+    const clinched = standings.byGroup[group]?.find((s) => s.clinchedRank === rank) ?? null;
     return {
-      team,
+      team: clinched?.team ?? null,
       label: `${rank === 1 ? 'Winners' : 'Runners-up'} Group ${group}`,
-      provisional: !decided,
+      provisional: !clinched,
     };
   }
 
-  // Best third-placed teams, e.g. "3rd-1" .. "3rd-8".
+  // Best third-placed teams, e.g. "3rd-1" .. "3rd-8". The cross-group ranking of
+  // third-placed teams isn't guaranteed until every group has finished, so hold
+  // the placeholder until then rather than name a projected qualifier.
   const third = /^3rd-([1-8])$/.exec(occupant);
   if (third) {
     const idx = Number(third[1]) - 1;
-    const team = standings.bestThirds[idx]?.team ?? null;
-    return { team, label: '3rd-placed qualifier', provisional: !allGroupsFinished(matches, nowMs) };
+    const decided = allGroupsFinished(matches, nowMs);
+    const team = decided ? (standings.bestThirds[idx]?.team ?? null) : null;
+    return { team, label: '3rd-placed qualifier', provisional: !decided };
   }
 
   // Winner of an earlier match, e.g. "W73".

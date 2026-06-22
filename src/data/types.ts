@@ -103,4 +103,18 @@ export interface Standing {
   form: ('W' | 'D' | 'L')[];
   /** 1-based position within the group. */
   rank: number;
+  /**
+   * True once the team has mathematically clinched a top-2 group finish — a
+   * guaranteed knockout berth no matter how the remaining group games go.
+   * Exact on points and head-to-head; conservative on goal difference.
+   */
+  qualified: boolean;
+  /**
+   * The exact group position (1 = winners, 2 = runners-up) the team is
+   * mathematically guaranteed to finish in, or null when its precise placing
+   * isn't locked yet. A team can clinch 1st before the group ends — e.g. when it
+   * has beaten, head-to-head, every rival that could otherwise draw level on
+   * points. Implies `qualified`.
+   */
+  clinchedRank: 1 | 2 | null;
 }

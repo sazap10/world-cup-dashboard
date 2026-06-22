@@ -32,6 +32,8 @@ export function standingsForGroup(
         points: 0,
         form: [],
         rank: 0,
+        qualified: false,
+        clinchedRank: null,
       },
     });
   }
@@ -92,10 +94,158 @@ export function standingsForGroup(
   });
 
   const ranked = rankGroup(standings, played);
+  const worst = worstCaseRanks(group, matches, teams, nowMs);
+  // Once the group is over the ranking is definitive (the full tiebreaker chain,
+  // goal difference included, has run), so the top two have qualified outright in
+  // their final order — even where the clinch maths, conservative on goal
+  // difference, can't say so. Require at least one fixture so an empty/partial
+  // dataset (no games for this group) isn't mistaken for a finished group, which
+  // would otherwise mark the name-sorted top two as qualified (mirrors
+  // groupFinished() in knockout.ts).
+  const groupGames = matches.filter((m) => m.stage === 'group' && m.group === group);
+  const groupComplete =
+    groupGames.length > 0 && groupGames.every((m) => effectiveStatus(m, nowMs) === 'finished');
+  // A guaranteed winner (worst-case rank 1) is unique. When one exists, any other
+  // team guaranteed top-2 must be the runner-up (the winner always takes 1st).
+  const hasGuaranteedWinner = ranked.some((s) => worst.get(s.team.code) === 1);
   ranked.forEach((s, i) => {
     s.rank = i + 1;
+    const wr = worst.get(s.team.code) ?? ranked.length;
+    s.qualified = wr <= 2 || (groupComplete && i < 2);
+    let clinchedRank: 1 | 2 | null = null;
+    if (wr === 1) clinchedRank = 1;
+    else if (hasGuaranteedWinner && wr <= 2) clinchedRank = 2;
+    if (groupComplete && i < 2) clinchedRank = (i + 1) as 1 | 2;
+    s.clinchedRank = clinchedRank;
   });
   return ranked;
+}
+
+type Outcome = 'home' | 'draw' | 'away';
+
+/** Award points for one match outcome to a running { code: points } tally. */
+function applyOutcome(
+  pts: Map<string, number>,
+  home: string,
+  away: string,
+  outcome: Outcome,
+): void {
+  if (outcome === 'home') pts.set(home, (pts.get(home) ?? 0) + 3);
+  else if (outcome === 'away') pts.set(away, (pts.get(away) ?? 0) + 3);
+  else {
+    pts.set(home, (pts.get(home) ?? 0) + 1);
+    pts.set(away, (pts.get(away) ?? 0) + 1);
+  }
+}
+
+/**
+ * Each group team's worst-case finishing rank — the lowest position (largest
+ * number) it can still end up in, over every way the unfinished group games
+ * could go. A worst-case rank of 1 means the team has clinched the group; ≤ 2
+ * means it has clinched a top-2 knockout berth.
+ *
+ * Exhaustively enumerates every outcome (home win / draw / away win) of the
+ * unfinished group matches. EXACT on points and head-to-head points (the FIFA
+ * 2026 primary tiebreaker, which is fully determined by win/draw/loss — no
+ * scorelines needed). CONSERVATIVE on goal difference: a set still level on both
+ * points and H2H points is treated as unresolved, so a GD-only guarantee is
+ * intentionally not claimed early. That only ever delays a guarantee, never
+ * asserts one wrongly.
+ */
+export function worstCaseRanks(
+  group: GroupId,
+  matches: Match[],
+  teams: Team[],
+  nowMs: number,
+): Map<string, number> {
+  const codes = teams.filter((t) => t.group === group).map((t) => t.code);
+  const codeSet = new Set(codes);
+
+  const groupMatches = matches.filter(
+    (m) => m.stage === 'group' && m.group === group && codeSet.has(m.home) && codeSet.has(m.away),
+  );
+
+  const basePoints = new Map<string, number>(codes.map((c) => [c, 0]));
+  const baseResults: { home: string; away: string; outcome: Outcome }[] = [];
+  const remaining: { home: string; away: string }[] = [];
+
+  for (const m of groupMatches) {
+    if (m.result && effectiveStatus(m, nowMs) === 'finished') {
+      const outcome: Outcome =
+        m.result.home > m.result.away ? 'home' : m.result.home < m.result.away ? 'away' : 'draw';
+      applyOutcome(basePoints, m.home, m.away, outcome);
+      baseResults.push({ home: m.home, away: m.away, outcome });
+    } else {
+      remaining.push({ home: m.home, away: m.away });
+    }
+  }
+
+  // Upper bound so the 3^n enumeration stays bounded for malformed feeds (a real
+  // group of 4 has at most 6 matches). When we can't enumerate, claim nothing:
+  // every team's worst case is last.
+  if (remaining.length > 10) return new Map(codes.map((c) => [c, codes.length]));
+
+  const worst = new Map<string, number>(codes.map((c) => [c, 1]));
+  const scenarios = 3 ** remaining.length;
+  const outcomes: Outcome[] = ['home', 'draw', 'away'];
+
+  for (let s = 0; s < scenarios; s++) {
+    const pts = new Map(basePoints);
+    const results = [...baseResults];
+    let n = s;
+    for (const game of remaining) {
+      const outcome = outcomes[n % 3];
+      n = Math.floor(n / 3);
+      applyOutcome(pts, game.home, game.away, outcome);
+      results.push({ home: game.home, away: game.away, outcome });
+    }
+
+    for (const x of codes) {
+      const pos = worstPosition(x, codes, pts, results);
+      if (pos > (worst.get(x) ?? 1)) worst.set(x, pos);
+    }
+  }
+
+  return worst;
+}
+
+/**
+ * Finishing position of `x` in one fully-decided scenario, resolving teams
+ * level on points by head-to-head points only. A rival on equal points *and*
+ * equal head-to-head points is counted as ahead (conservative — we can't
+ * separate it without goal difference).
+ */
+function worstPosition(
+  x: string,
+  codes: string[],
+  pts: Map<string, number>,
+  results: { home: string; away: string; outcome: Outcome }[],
+): number {
+  const px = pts.get(x) ?? 0;
+  let above = 0;
+  const tied: string[] = [];
+  for (const y of codes) {
+    if (y === x) continue;
+    const py = pts.get(y) ?? 0;
+    if (py > px) above++;
+    else if (py === px) tied.push(y);
+  }
+
+  if (tied.length > 0) {
+    const level = [x, ...tied];
+    const levelSet = new Set(level);
+    const h2h = new Map<string, number>(level.map((c) => [c, 0]));
+    for (const r of results) {
+      if (!levelSet.has(r.home) || !levelSet.has(r.away)) continue;
+      applyOutcome(h2h, r.home, r.away, r.outcome);
+    }
+    const hx = h2h.get(x) ?? 0;
+    for (const y of tied) {
+      if ((h2h.get(y) ?? 0) >= hx) above++;
+    }
+  }
+
+  return above + 1;
 }
 
 /**

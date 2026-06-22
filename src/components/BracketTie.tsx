@@ -14,11 +14,6 @@ function Slot({ slot }: { slot: BracketMatch['home'] }) {
         <span className="flag flag--sm flag--slot" aria-hidden="true" />
       )}
       <span className="tie-slot__name">{team ? team.name : slot.label}</span>
-      {team && slot.provisional && (
-        <span className="tie-slot__prov" title="Provisional, group not yet decided">
-          ≈
-        </span>
-      )}
     </div>
   );
 }

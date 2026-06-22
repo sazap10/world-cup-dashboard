@@ -28,6 +28,22 @@ function match(group: GroupId, home: string, away: string, hg: number, ag: numbe
   };
 }
 
+/** An unplayed fixture: kicks off after NOW, so it counts as a remaining game. */
+function upcoming(group: GroupId, home: string, away: string): Match {
+  matchSeq += 1;
+  return {
+    id: `m${matchSeq}`,
+    stage: 'group',
+    group,
+    kickoff: '2026-07-10T12:00:00Z', // after NOW
+    home,
+    away,
+    result: null,
+    roundLabel: 'Group',
+    ...stub,
+  };
+}
+
 function team(code: string, name: string, group: GroupId): Team {
   return { code, name, group };
 }
@@ -174,6 +190,177 @@ describe('standingsForGroup head-to-head tiebreakers (FIFA 2026)', () => {
   });
 });
 
+describe('clinching a knockout place (qualified flag)', () => {
+  function qualified(table: Standing[]): string[] {
+    return table
+      .filter((s) => s.qualified)
+      .map((s) => s.team.code)
+      .sort();
+  }
+
+  it('marks the two clear leaders as qualified with a game to spare', () => {
+    // TA and TB win both their games; TC and TD have lost twice and can each
+    // reach only 3 points, below TA/TB's secured 6. Only TA-TB and TC-TD remain.
+    const teams = [
+      team('TA', 'Alpha', 'G'),
+      team('TB', 'Bravo', 'G'),
+      team('TC', 'Charlie', 'G'),
+      team('TD', 'Delta', 'G'),
+    ];
+    const matches = [
+      match('G', 'TA', 'TC', 1, 0),
+      match('G', 'TA', 'TD', 1, 0),
+      match('G', 'TB', 'TC', 1, 0),
+      match('G', 'TB', 'TD', 1, 0),
+      upcoming('G', 'TA', 'TB'),
+      upcoming('G', 'TC', 'TD'),
+    ];
+
+    const table = standingsForGroup('G', matches, teams, NOW);
+    expect(qualified(table)).toEqual(['TA', 'TB']);
+  });
+
+  it('does not mark a leader still catchable by two or more teams', () => {
+    // One round played: TA beat TB. With two games each still to play, TB, TC
+    // and TD can all out-point TA, so nothing is clinched yet.
+    const teams = [
+      team('TA', 'Alpha', 'H'),
+      team('TB', 'Bravo', 'H'),
+      team('TC', 'Charlie', 'H'),
+      team('TD', 'Delta', 'H'),
+    ];
+    const matches = [
+      match('H', 'TA', 'TB', 1, 0),
+      upcoming('H', 'TC', 'TD'),
+      upcoming('H', 'TA', 'TC'),
+      upcoming('H', 'TA', 'TD'),
+      upcoming('H', 'TB', 'TC'),
+      upcoming('H', 'TB', 'TD'),
+    ];
+
+    const table = standingsForGroup('H', matches, teams, NOW);
+    expect(qualified(table)).toEqual([]);
+  });
+
+  it('clinches via head-to-head when a rival can only draw level on points', () => {
+    // TA has 6 points (beat TB and TC). The only teams that can still reach 6 are
+    // TB and TC — but they play each other, so at most one gets there, and TA has
+    // beaten both head-to-head. A points-only check would call TA catchable; the
+    // head-to-head-aware check correctly clinches it. (TB/TC are NOT clinched:
+    // whichever wins their game, TA finishes above on H2H and the loser drops.)
+    const teams = [
+      team('TA', 'Alpha', 'I'),
+      team('TB', 'Bravo', 'I'),
+      team('TC', 'Charlie', 'I'),
+      team('TD', 'Delta', 'I'),
+    ];
+    const matches = [
+      match('I', 'TA', 'TB', 1, 0), // TA beats TB (H2H)
+      match('I', 'TA', 'TC', 1, 0), // TA beats TC (H2H)
+      match('I', 'TB', 'TD', 1, 0), // TB beats TD
+      match('I', 'TC', 'TD', 1, 0), // TC beats TD
+      upcoming('I', 'TA', 'TD'),
+      upcoming('I', 'TB', 'TC'),
+    ];
+
+    const table = standingsForGroup('I', matches, teams, NOW);
+    expect(qualified(table)).toEqual(['TA']);
+    // TA has also clinched *first*: the only teams that can reach 6 are TB/TC,
+    // and TA owns the head-to-head over both, so it can't be caught for top spot.
+    expect(byCode(table, 'TA').clinchedRank).toBe(1);
+    expect(byCode(table, 'TB').clinchedRank).toBeNull();
+  });
+
+  it('clinches an exact runner-up slot once the winner is locked', () => {
+    // TA has won all three (9 pts, done). TB has beaten TC and TD and lost only to
+    // TA (6 pts, done). Only TC-TD is left and neither can pass TB, so TA is the
+    // guaranteed winner and TB the guaranteed runner-up — before the group ends.
+    const teams = [
+      team('TA', 'Alpha', 'K'),
+      team('TB', 'Bravo', 'K'),
+      team('TC', 'Charlie', 'K'),
+      team('TD', 'Delta', 'K'),
+    ];
+    const matches = [
+      match('K', 'TA', 'TB', 1, 0),
+      match('K', 'TA', 'TC', 1, 0),
+      match('K', 'TA', 'TD', 1, 0),
+      match('K', 'TB', 'TC', 1, 0),
+      match('K', 'TB', 'TD', 1, 0),
+      upcoming('K', 'TC', 'TD'),
+    ];
+
+    const table = standingsForGroup('K', matches, teams, NOW);
+    expect(byCode(table, 'TA').clinchedRank).toBe(1);
+    expect(byCode(table, 'TB').clinchedRank).toBe(2);
+    expect(byCode(table, 'TC').clinchedRank).toBeNull();
+    expect(byCode(table, 'TD').clinchedRank).toBeNull();
+  });
+
+  it('treats a group with no fixtures as undecided, not complete', () => {
+    // A partial/empty dataset has no games for the group. It must not be mistaken
+    // for a finished group — otherwise the name-sorted "top two" would be marked
+    // qualified and handed clinchedRank 1/2 off arbitrary ordering.
+    const teams = [
+      team('TA', 'Alpha', 'A'),
+      team('TB', 'Bravo', 'A'),
+      team('TC', 'Charlie', 'A'),
+      team('TD', 'Delta', 'A'),
+    ];
+
+    const table = standingsForGroup('A', [], teams, NOW);
+    expect(table.every((s) => s.qualified === false)).toBe(true);
+    expect(table.every((s) => s.clinchedRank === null)).toBe(true);
+  });
+
+  it('does not lock a winner while two teams can still finish top on points', () => {
+    // After one round TA leads, but with two games to go several teams can still
+    // top the group, so no exact placing is guaranteed yet.
+    const teams = [
+      team('TA', 'Alpha', 'L'),
+      team('TB', 'Bravo', 'L'),
+      team('TC', 'Charlie', 'L'),
+      team('TD', 'Delta', 'L'),
+    ];
+    const matches = [
+      match('L', 'TA', 'TB', 1, 0),
+      upcoming('L', 'TC', 'TD'),
+      upcoming('L', 'TA', 'TC'),
+      upcoming('L', 'TA', 'TD'),
+      upcoming('L', 'TB', 'TC'),
+      upcoming('L', 'TB', 'TD'),
+    ];
+
+    const table = standingsForGroup('L', matches, teams, NOW);
+    expect(table.every((s) => s.clinchedRank === null)).toBe(true);
+  });
+
+  it('marks the actual top two once the group is complete, even split by goal difference', () => {
+    // TA wins the group. TB and TC finish level on 4 points with an identical
+    // head-to-head (1-1 draw), separated only by overall goal difference (TB +2,
+    // TC 0). The clinch maths is conservative on GD, but a finished group has a
+    // definitive order, so the top two (TA, TB) are marked qualified.
+    const teams = [
+      team('TA', 'Alpha', 'J'),
+      team('TB', 'Bravo', 'J'),
+      team('TC', 'Charlie', 'J'),
+      team('TD', 'Delta', 'J'),
+    ];
+    const matches = [
+      match('J', 'TA', 'TB', 1, 0),
+      match('J', 'TA', 'TC', 1, 0),
+      match('J', 'TA', 'TD', 1, 0),
+      match('J', 'TB', 'TC', 1, 1), // level head-to-head
+      match('J', 'TB', 'TD', 3, 0), // TB better overall GD
+      match('J', 'TC', 'TD', 1, 0),
+    ];
+
+    const table = standingsForGroup('J', matches, teams, NOW);
+    expect(order(table)).toEqual(['TA', 'TB', 'TC', 'TD']);
+    expect(qualified(table)).toEqual(['TA', 'TB']);
+  });
+});
+
 describe('compareStandings (cross-group thirds ranking, unchanged)', () => {
   const base: Omit<Standing, 'team' | 'points' | 'goalDifference' | 'goalsFor'> = {
     played: 3,
@@ -183,6 +370,8 @@ describe('compareStandings (cross-group thirds ranking, unchanged)', () => {
     goalsAgainst: 0,
     form: [],
     rank: 0,
+    qualified: false,
+    clinchedRank: null,
   };
   const s = (code: string, points: number, gd: number, gf: number): Standing => ({
     ...base,

@@ -1040,6 +1040,19 @@
   color: var(--faint);
   font-weight: 600;
 }
+.standings__qual {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 5px;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 1;
+  background: var(--win);
+  color: var(--on-chip);
+}
 .col-form {
   width: 1%;
   white-space: nowrap;
@@ -1259,11 +1272,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.tie-slot__prov {
-  margin-left: auto;
-  color: var(--faint);
-  font-weight: 700;
 }
 .tie__foot {
   display: flex;
