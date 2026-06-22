@@ -68,6 +68,16 @@ export function StandingsTable({ group, standings }: Props) {
                   <Flag flag={s.team.flag} crest={s.team.crest} size="sm" />
                   <span className="standings__name">{s.team.name}</span>
                   <span className="standings__code">{s.team.code}</span>
+                  {s.qualified && (
+                    <span
+                      className="standings__qual"
+                      role="img"
+                      title="Qualified for the knockouts"
+                      aria-label="Qualified for the knockouts"
+                    >
+                      Q
+                    </span>
+                  )}
                 </span>
               </td>
               <td className="tnum">{s.played}</td>

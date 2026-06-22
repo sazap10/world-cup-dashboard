@@ -19,7 +19,7 @@ export function Knockout() {
     <div className="shell page page-knockout">
       <PageHeader
         title="Knockout bracket"
-        lede="The road to the final on 19 July. Seedings shown are provisional until each group is decided (≈)."
+        lede="The road to the final on 19 July. Each slot fills in only once its qualifier is mathematically guaranteed — a group winner can lock in early on head-to-head, while the best third-placed teams are set only after every group is done."
         showZone
       />
 
