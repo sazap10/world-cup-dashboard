@@ -186,9 +186,9 @@ function knockoutMatchNumber(id: string): number {
 }
 
 /** Build a June 2026 UTC ISO timestamp; days > 30 roll into July. */
-function juneKickoff(day: number, hour: number): string {
-  if (day <= 30) return `2026-06-${pad(day)}T${pad(hour)}:00:00Z`;
-  return `2026-07-${pad(day - 30)}T${pad(hour)}:00:00Z`;
+function juneKickoff(day: number, hour: number, minute = 0): string {
+  const date = day <= 30 ? `2026-06-${pad(day)}` : `2026-07-${pad(day - 30)}`;
+  return `${date}T${pad(hour)}:${pad(minute)}:00Z`;
 }
 
 // ---------------------------------------------------------------------------
@@ -196,39 +196,67 @@ function juneKickoff(day: number, hour: number): string {
 // Participants depend on results we don't have yet, so ties carry slot
 // labels ("1A", "3rd-1", "W73") rather than fixed teams.
 // ---------------------------------------------------------------------------
-interface KnockoutTemplate {
-  id: string;
-  stage: Stage;
-  roundLabel: string;
-  home: string;
-  away: string;
-  day: number;
-  hour: number;
-  broadcasterIndex: number;
-}
+/**
+ * Official UTC kickoff for each knockout tie, keyed by FIFA match number
+ * (see knockoutMatchNumber — the app's final K-M103 maps to FIFA match 104).
+ * Value is [day, hour, minute?] in the juneKickoff calendar (day > 30 = July).
+ */
+const KNOCKOUT_KICKOFFS: Record<number, [number, number, number?]> = {
+  73: [28, 19], // Round of 32
+  74: [29, 20, 30],
+  75: [30, 1],
+  76: [29, 17],
+  77: [30, 21],
+  78: [30, 17],
+  79: [31, 1],
+  80: [31, 16],
+  81: [32, 0],
+  82: [31, 20],
+  83: [32, 23],
+  84: [32, 19],
+  85: [33, 3],
+  86: [33, 22],
+  87: [34, 1, 30],
+  88: [33, 18],
+  89: [34, 21], // Round of 16
+  90: [34, 17],
+  91: [35, 20],
+  92: [36, 0],
+  93: [36, 19],
+  94: [37, 0],
+  95: [37, 16],
+  96: [37, 20],
+  97: [39, 20], // Quarter-finals
+  98: [40, 19],
+  99: [41, 21],
+  100: [42, 1],
+  101: [44, 19], // Semi-finals
+  102: [45, 19],
+  104: [49, 19], // Final
+};
 
 // Round of 32 — pairings use group-position labels and "best third" slots.
 // Matchups follow FIFA's published 2026 schedule (Match 73–88). The eight
 // "winner vs best third" ties carry generic 3rd-1…3rd-8 slots: FIFA's exact
 // third-placed allocation depends on which groups' thirds qualify, which the
 // app approximates by cross-group ranking (see resolveSlot in lib/knockout).
-const R32_TEMPLATES: Omit<KnockoutTemplate, 'stage' | 'roundLabel'>[] = [
-  { id: 'M73', home: '2A', away: '2B', day: 28, hour: 16, broadcasterIndex: 0 },
-  { id: 'M74', home: '1E', away: '3rd-1', day: 28, hour: 20, broadcasterIndex: 2 },
-  { id: 'M75', home: '1F', away: '2C', day: 29, hour: 16, broadcasterIndex: 1 },
-  { id: 'M76', home: '1C', away: '2F', day: 29, hour: 20, broadcasterIndex: 3 },
-  { id: 'M77', home: '1I', away: '3rd-2', day: 29, hour: 22, broadcasterIndex: 0 },
-  { id: 'M78', home: '2E', away: '2I', day: 30, hour: 16, broadcasterIndex: 2 },
-  { id: 'M79', home: '1A', away: '3rd-3', day: 30, hour: 20, broadcasterIndex: 1 },
-  { id: 'M80', home: '1L', away: '3rd-4', day: 30, hour: 22, broadcasterIndex: 3 },
-  { id: 'M81', home: '1D', away: '3rd-5', day: 31, hour: 16, broadcasterIndex: 0 },
-  { id: 'M82', home: '1G', away: '3rd-6', day: 31, hour: 20, broadcasterIndex: 2 },
-  { id: 'M83', home: '2K', away: '2L', day: 31, hour: 22, broadcasterIndex: 1 },
-  { id: 'M84', home: '1H', away: '2J', day: 32, hour: 16, broadcasterIndex: 3 },
-  { id: 'M85', home: '1B', away: '3rd-7', day: 32, hour: 20, broadcasterIndex: 0 },
-  { id: 'M86', home: '1J', away: '2H', day: 32, hour: 22, broadcasterIndex: 2 },
-  { id: 'M87', home: '1K', away: '3rd-8', day: 33, hour: 16, broadcasterIndex: 1 },
-  { id: 'M88', home: '2D', away: '2G', day: 33, hour: 20, broadcasterIndex: 3 },
+const R32_TEMPLATES: { id: string; home: string; away: string }[] = [
+  { id: 'M73', home: '2A', away: '2B' },
+  { id: 'M74', home: '1E', away: '3rd-1' },
+  { id: 'M75', home: '1F', away: '2C' },
+  { id: 'M76', home: '1C', away: '2F' },
+  { id: 'M77', home: '1I', away: '3rd-2' },
+  { id: 'M78', home: '2E', away: '2I' },
+  { id: 'M79', home: '1A', away: '3rd-3' },
+  { id: 'M80', home: '1L', away: '3rd-4' },
+  { id: 'M81', home: '1D', away: '3rd-5' },
+  { id: 'M82', home: '1G', away: '3rd-6' },
+  { id: 'M83', home: '2K', away: '2L' },
+  { id: 'M84', home: '1H', away: '2J' },
+  { id: 'M85', home: '1B', away: '3rd-7' },
+  { id: 'M86', home: '1J', away: '2H' },
+  { id: 'M87', home: '1K', away: '3rd-8' },
+  { id: 'M88', home: '2D', away: '2G' },
 ];
 
 // Later rounds reference the winners of earlier matches, following FIFA's
@@ -263,16 +291,16 @@ function buildKnockout(): Match[] {
     roundLabel: string,
     home: string,
     away: string,
-    day: number,
-    hour: number,
   ): Match => {
-    // Real FIFA venue, keyed by match number. Ids run K-M73…K-M102; the final is
-    // K-M103 here but is FIFA match 104 (there's no third-place play-off in this app).
-    const venueId = venueIdForKnockoutMatch(knockoutMatchNumber(id));
+    // Real FIFA venue and kickoff, keyed by match number. Ids run K-M73…K-M102;
+    // the final is K-M103 here but is FIFA match 104 (no third-place play-off).
+    const number = knockoutMatchNumber(id);
+    const venueId = venueIdForKnockoutMatch(number);
+    const [day, hour, minute] = KNOCKOUT_KICKOFFS[number];
     return {
       id,
       stage,
-      kickoff: juneKickoff(day, hour),
+      kickoff: juneKickoff(day, hour, minute),
       venue: venueId ? venueById(venueId) : null,
       // Knockout ties aren't in the broadcast listings yet (teams undetermined),
       // so these resolve to "Broadcaster TBC".
@@ -287,21 +315,19 @@ function buildKnockout(): Match[] {
   };
 
   R32_TEMPLATES.forEach((t) => {
-    out.push(make(`K-${t.id}`, 'r32', 'Round of 32', t.home, t.away, t.day, t.hour));
+    out.push(make(`K-${t.id}`, 'r32', 'Round of 32', t.home, t.away));
   });
 
   R16_PAIRS.forEach(([h, a], i) => {
-    out.push(
-      make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a, 34 + Math.floor(i / 2), i % 2 ? 20 : 16),
-    );
+    out.push(make(`K-M${89 + i}`, 'r16', 'Round of 16', h, a));
   });
   QF_PAIRS.forEach(([h, a], i) => {
-    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a, 39 + i, i % 2 ? 20 : 16));
+    out.push(make(`K-M${97 + i}`, 'qf', 'Quarter-final', h, a));
   });
   SF_PAIRS.forEach(([h, a], i) => {
-    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a, 44 + i, 20));
+    out.push(make(`K-M${101 + i}`, 'sf', 'Semi-final', h, a));
   });
-  out.push(make('K-M103', 'final', 'Final', 'W101', 'W102', 49, 19));
+  out.push(make('K-M103', 'final', 'Final', 'W101', 'W102'));
 
   return out;
 }
