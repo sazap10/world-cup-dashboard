@@ -208,41 +208,47 @@ interface KnockoutTemplate {
 }
 
 // Round of 32 — pairings use group-position labels and "best third" slots.
+// Matchups follow FIFA's published 2026 schedule (Match 73–88). The eight
+// "winner vs best third" ties carry generic 3rd-1…3rd-8 slots: FIFA's exact
+// third-placed allocation depends on which groups' thirds qualify, which the
+// app approximates by cross-group ranking (see resolveSlot in lib/knockout).
 const R32_TEMPLATES: Omit<KnockoutTemplate, 'stage' | 'roundLabel'>[] = [
-  { id: 'M73', home: '1A', away: '2C', day: 28, hour: 16, broadcasterIndex: 0 },
-  { id: 'M74', home: '1C', away: '2F', day: 28, hour: 20, broadcasterIndex: 2 },
-  { id: 'M75', home: '1E', away: '3rd-1', day: 29, hour: 16, broadcasterIndex: 1 },
-  { id: 'M76', home: '1F', away: '2E', day: 29, hour: 20, broadcasterIndex: 3 },
+  { id: 'M73', home: '2A', away: '2B', day: 28, hour: 16, broadcasterIndex: 0 },
+  { id: 'M74', home: '1E', away: '3rd-1', day: 28, hour: 20, broadcasterIndex: 2 },
+  { id: 'M75', home: '1F', away: '2C', day: 29, hour: 16, broadcasterIndex: 1 },
+  { id: 'M76', home: '1C', away: '2F', day: 29, hour: 20, broadcasterIndex: 3 },
   { id: 'M77', home: '1I', away: '3rd-2', day: 29, hour: 22, broadcasterIndex: 0 },
-  { id: 'M78', home: '1B', away: '3rd-3', day: 30, hour: 16, broadcasterIndex: 2 },
-  { id: 'M79', home: '1K', away: '2L', day: 30, hour: 20, broadcasterIndex: 1 },
-  { id: 'M80', home: '2A', away: '2B', day: 30, hour: 22, broadcasterIndex: 3 },
-  { id: 'M81', home: '1D', away: '3rd-4', day: 31, hour: 16, broadcasterIndex: 0 },
-  { id: 'M82', home: '1G', away: '3rd-5', day: 31, hour: 20, broadcasterIndex: 2 },
-  { id: 'M83', home: '1H', away: '2J', day: 31, hour: 22, broadcasterIndex: 1 },
-  { id: 'M84', home: '1J', away: '2H', day: 32, hour: 16, broadcasterIndex: 3 },
-  { id: 'M85', home: '1L', away: '3rd-6', day: 32, hour: 20, broadcasterIndex: 0 },
-  { id: 'M86', home: '2D', away: '2G', day: 32, hour: 22, broadcasterIndex: 2 },
-  { id: 'M87', home: '2I', away: '2K', day: 33, hour: 16, broadcasterIndex: 1 },
-  { id: 'M88', home: '3rd-7', away: '3rd-8', day: 33, hour: 20, broadcasterIndex: 3 },
+  { id: 'M78', home: '2E', away: '2I', day: 30, hour: 16, broadcasterIndex: 2 },
+  { id: 'M79', home: '1A', away: '3rd-3', day: 30, hour: 20, broadcasterIndex: 1 },
+  { id: 'M80', home: '1L', away: '3rd-4', day: 30, hour: 22, broadcasterIndex: 3 },
+  { id: 'M81', home: '1D', away: '3rd-5', day: 31, hour: 16, broadcasterIndex: 0 },
+  { id: 'M82', home: '1G', away: '3rd-6', day: 31, hour: 20, broadcasterIndex: 2 },
+  { id: 'M83', home: '2K', away: '2L', day: 31, hour: 22, broadcasterIndex: 1 },
+  { id: 'M84', home: '1H', away: '2J', day: 32, hour: 16, broadcasterIndex: 3 },
+  { id: 'M85', home: '1B', away: '3rd-7', day: 32, hour: 20, broadcasterIndex: 0 },
+  { id: 'M86', home: '1J', away: '2H', day: 32, hour: 22, broadcasterIndex: 2 },
+  { id: 'M87', home: '1K', away: '3rd-8', day: 33, hour: 16, broadcasterIndex: 1 },
+  { id: 'M88', home: '2D', away: '2G', day: 33, hour: 20, broadcasterIndex: 3 },
 ];
 
-// Later rounds reference the winners of earlier matches.
+// Later rounds reference the winners of earlier matches, following FIFA's
+// published 2026 bracket progression (Match 89–102). Index order maps to match
+// ids: R16 → M89…M96, QF → M97…M100, SF → M101…M102.
 const R16_PAIRS: [string, string][] = [
-  ['W73', 'W74'],
-  ['W75', 'W76'],
-  ['W77', 'W78'],
-  ['W79', 'W80'],
-  ['W81', 'W82'],
-  ['W83', 'W84'],
-  ['W85', 'W86'],
-  ['W87', 'W88'],
+  ['W74', 'W77'], // M89
+  ['W73', 'W75'], // M90
+  ['W76', 'W78'], // M91
+  ['W79', 'W80'], // M92
+  ['W83', 'W84'], // M93
+  ['W81', 'W82'], // M94
+  ['W86', 'W88'], // M95
+  ['W85', 'W87'], // M96
 ];
 const QF_PAIRS: [string, string][] = [
-  ['W89', 'W90'],
-  ['W91', 'W92'],
-  ['W93', 'W94'],
-  ['W95', 'W96'],
+  ['W89', 'W90'], // M97
+  ['W93', 'W94'], // M98
+  ['W91', 'W92'], // M99
+  ['W95', 'W96'], // M100
 ];
 const SF_PAIRS: [string, string][] = [
   ['W97', 'W98'],

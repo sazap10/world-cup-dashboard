@@ -1,5 +1,6 @@
 import { KNOCKOUT_MATCHES } from '../data/schedule';
 import { GROUP_IDS } from '../data/teams';
+import { thirdPlaceGroupForSlot } from '../data/third-place-allocation';
 import type { GroupId, Match, Stage, Team } from '../data/types';
 import { effectiveStatus } from './matches';
 import { type AllStandings, allStandings } from './standings';
@@ -84,15 +85,24 @@ export function resolveSlot(
     };
   }
 
-  // Best third-placed teams, e.g. "3rd-1" .. "3rd-8". The cross-group ranking of
-  // third-placed teams isn't guaranteed until every group has finished, so hold
-  // the placeholder until then rather than name a projected qualifier.
+  // Best third-placed teams, e.g. "3rd-1" .. "3rd-8". Which group's third fills
+  // each slot is fixed by FIFA's published allocation table, keyed on *which*
+  // eight groups supply a qualifying third — so it isn't guaranteed until every
+  // group has finished and the cross-group ranking is settled. Until then we
+  // hold the placeholder rather than name a projected qualifier.
   const third = /^3rd-([1-8])$/.exec(occupant);
   if (third) {
-    const idx = Number(third[1]) - 1;
     const decided = allGroupsFinished(matches, nowMs);
-    const team = decided ? (standings.bestThirds[idx]?.team ?? null) : null;
-    return { team, label: '3rd-placed qualifier', provisional: !decided };
+    if (decided) {
+      const qualifyingGroups = standings.bestThirds
+        .slice(0, 8)
+        .map((s) => s.team.group)
+        .filter((g): g is GroupId => g !== undefined);
+      const group = thirdPlaceGroupForSlot(qualifyingGroups, Number(third[1]));
+      const team = group ? (standings.byGroup[group]?.[2]?.team ?? null) : null;
+      return { team, label: '3rd-placed qualifier', provisional: !team };
+    }
+    return { team: null, label: '3rd-placed qualifier', provisional: true };
   }
 
   // Winner of an earlier match, e.g. "W73".
