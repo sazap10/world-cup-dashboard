@@ -20,11 +20,13 @@ describe('third-placed allocation table', () => {
     expect(Object.keys(THIRD_PLACE_ALLOCATION)).toHaveLength(495);
   });
 
-  it('keys are sorted eight-group strings and values are a permutation of them', () => {
+  it('keys are sorted strings of eight distinct groups and values permute them', () => {
     for (const [key, value] of Object.entries(THIRD_PLACE_ALLOCATION)) {
       expect(key).toMatch(/^[A-L]{8}$/);
+      expect(new Set(key).size).toBe(8); // eight distinct groups
       expect([...key].sort().join('')).toBe(key); // key already sorted
-      expect([...value].sort().join('')).toBe(key); // value is a permutation
+      expect(new Set(value).size).toBe(8); // value has no repeated group
+      expect([...value].sort().join('')).toBe(key); // value is a permutation of the key
     }
   });
 

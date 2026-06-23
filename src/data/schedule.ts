@@ -237,9 +237,10 @@ const KNOCKOUT_KICKOFFS: Record<number, [number, number, number?]> = {
 
 // Round of 32 — pairings use group-position labels and "best third" slots.
 // Matchups follow FIFA's published 2026 schedule (Match 73–88). The eight
-// "winner vs best third" ties carry generic 3rd-1…3rd-8 slots: FIFA's exact
-// third-placed allocation depends on which groups' thirds qualify, which the
-// app approximates by cross-group ranking (see resolveSlot in lib/knockout).
+// "winner vs best third" ties carry generic 3rd-1…3rd-8 slots resolved via
+// FIFA's official allocation table; which group fills each slot depends on
+// *which* eight groups' thirds qualify — the only part decided by cross-group
+// ranking (see resolveSlot in lib/knockout and data/third-place-allocation).
 const R32_TEMPLATES: { id: string; home: string; away: string }[] = [
   { id: 'M73', home: '2A', away: '2B' },
   { id: 'M74', home: '1E', away: '3rd-1' },
@@ -296,7 +297,9 @@ function buildKnockout(): Match[] {
     // the final is K-M103 here but is FIFA match 104 (no third-place play-off).
     const number = knockoutMatchNumber(id);
     const venueId = venueIdForKnockoutMatch(number);
-    const [day, hour, minute] = KNOCKOUT_KICKOFFS[number];
+    const timing = KNOCKOUT_KICKOFFS[number];
+    if (!timing) throw new Error(`No kickoff defined for knockout match ${id} (FIFA #${number})`);
+    const [day, hour, minute] = timing;
     return {
       id,
       stage,
