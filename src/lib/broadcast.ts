@@ -125,9 +125,11 @@ const KNOCKOUT_BROADCASTER_BY_MATCH: Record<number, string> = {
 
 /**
  * Real UK broadcaster for a knockout match by its FIFA match number, sourced from
- * live-footballontv.com. Falls back to "TBC" for rounds the source hasn't listed.
+ * live-footballontv.com. Falls back to "TBC" for rounds the source hasn't listed,
+ * and for an unknown match number (null) — never to a team-keyed lookup, which
+ * could wrongly borrow a group-stage channel from a coincident pairing.
  */
-export function broadcasterForKnockoutMatch(fifaMatch: number): Broadcaster {
-  const id = KNOCKOUT_BROADCASTER_BY_MATCH[fifaMatch];
+export function broadcasterForKnockoutMatch(fifaMatch: number | null): Broadcaster {
+  const id = fifaMatch != null ? KNOCKOUT_BROADCASTER_BY_MATCH[fifaMatch] : undefined;
   return (id && BROADCASTERS_BY_ID[id]) || BROADCASTER_TBC;
 }

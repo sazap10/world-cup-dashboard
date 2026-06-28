@@ -133,12 +133,13 @@ function mapMatch(m: FdMatch): Match {
     kickoff: m.utcDate,
     venue: mapVenue(m, stage, home, away, knockoutNumber),
     // Group ties match the UK broadcast listings by team codes; knockout ties are
-    // pinned to bracket slots, so key those by match number. Anything the
+    // pinned to bracket slots, so key those by match number only — never by team,
+    // which could borrow a group channel from a coincident pairing. Anything the
     // listings don't cover resolves to "Broadcaster TBC".
     broadcaster:
-      knockoutNumber != null
-        ? broadcasterForKnockoutMatch(knockoutNumber)
-        : broadcasterForTeams(home, away),
+      stage === 'group'
+        ? broadcasterForTeams(home, away)
+        : broadcasterForKnockoutMatch(knockoutNumber),
     home,
     away,
     result,
