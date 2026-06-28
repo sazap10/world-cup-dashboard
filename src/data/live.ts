@@ -3,8 +3,9 @@
 // to a same-origin base ("/fd" by default) where the Vite dev proxy — or a
 // production proxy — injects the X-Auth-Token header.
 
-import { broadcasterForTeams } from '../lib/broadcast';
-import { venueIdForPair } from './match-venues';
+import { broadcasterForKnockoutMatch, broadcasterForTeams } from '../lib/broadcast';
+import { venueIdForKnockoutMatch, venueIdForPair } from './match-venues';
+import { knockoutMatchNumberForKickoff } from './schedule';
 import type { Dataset } from './source';
 import type { GroupId, Match, Stage, Team, Venue } from './types';
 import { venueById } from './venues';
@@ -81,14 +82,24 @@ function mapStatus(s: string): Match['statusOverride'] {
 
 /**
  * Venue for a live match. The feed doesn't supply venues, so fall back to our
- * hard-coded FIFA assignment: group ties are keyed by pairing, so they resolve
- * once both teams are known. Knockout participants are TBD until results land,
- * so those stay unresolved here (null → "Venue TBC") rather than mis-assigned.
+ * hard-coded FIFA assignment. Group ties are keyed by pairing, so they resolve
+ * once both teams are known. Knockout venues are pinned to bracket slots, not
+ * participants, so they resolve from the FIFA match number (recovered from the
+ * kickoff) even while the teams are still TBD.
  */
-function mapVenue(m: FdMatch, stage: Stage, home: string, away: string): Venue | null {
+function mapVenue(
+  m: FdMatch,
+  stage: Stage,
+  home: string,
+  away: string,
+  knockoutNumber: number | null,
+): Venue | null {
   if (m.venue) return { id: `v-${m.id}`, stadium: m.venue };
   if (stage === 'group') {
     const id = venueIdForPair(home, away);
+    if (id) return venueById(id);
+  } else if (knockoutNumber != null) {
+    const id = venueIdForKnockoutMatch(knockoutNumber);
     if (id) return venueById(id);
   }
   return null;
@@ -110,16 +121,24 @@ function mapMatch(m: FdMatch): Match {
       ? `Group ${group}${m.matchday ? ` · Matchday ${m.matchday}` : ''}`
       : ROUND_LABEL[stage];
 
+  // Knockout fixtures are identified only by date in the feed; recover the FIFA
+  // match number so the slot-fixed venue and broadcaster resolve before the teams.
+  const knockoutNumber = stage === 'group' ? null : knockoutMatchNumberForKickoff(m.utcDate);
+
   return {
     id,
     stage,
     group,
     matchday: m.matchday ?? undefined,
     kickoff: m.utcDate,
-    venue: mapVenue(m, stage, home, away),
-    // Match the live tie to the UK broadcast listings by team codes; ties the
-    // listings don't cover resolve to "Broadcaster TBC".
-    broadcaster: broadcasterForTeams(home, away),
+    venue: mapVenue(m, stage, home, away, knockoutNumber),
+    // Group ties match the UK broadcast listings by team codes; knockout ties are
+    // pinned to bracket slots, so key those by match number. Anything the
+    // listings don't cover resolves to "Broadcaster TBC".
+    broadcaster:
+      knockoutNumber != null
+        ? broadcasterForKnockoutMatch(knockoutNumber)
+        : broadcasterForTeams(home, away),
     home,
     away,
     result,
