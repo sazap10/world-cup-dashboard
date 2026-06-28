@@ -1,4 +1,4 @@
-import { broadcasterForTeams, realFixtureFor } from '../lib/broadcast';
+import { broadcasterForKnockoutMatch, broadcasterForTeams, realFixtureFor } from '../lib/broadcast';
 import { venueIdForKnockoutMatch, venueIdForPair } from './match-venues';
 import { GROUP_IDS, teamsInGroup } from './teams';
 import type { Match, Score, Stage } from './types';
@@ -235,6 +235,22 @@ const KNOCKOUT_KICKOFFS: Record<number, [number, number, number?]> = {
   104: [49, 19], // Final
 };
 
+// Reverse of KNOCKOUT_KICKOFFS: UTC ISO kickoff → FIFA match number. Each
+// knockout fixture has a unique scheduled time, so the live feed — which
+// identifies knockout games only by date, not bracket position — can recover the
+// match number and thus the slot-fixed venue and broadcaster.
+const KNOCKOUT_MATCH_BY_KICKOFF: Record<string, number> = Object.fromEntries(
+  Object.entries(KNOCKOUT_KICKOFFS).map(([n, [day, hour, minute]]) => [
+    juneKickoff(day, hour, minute),
+    Number(n),
+  ]),
+);
+
+/** FIFA match number for a knockout kickoff (UTC ISO), or null if it isn't one. */
+export function knockoutMatchNumberForKickoff(kickoff: string): number | null {
+  return KNOCKOUT_MATCH_BY_KICKOFF[kickoff] ?? null;
+}
+
 // Round of 32 — pairings use group-position labels and "best third" slots.
 // Matchups follow FIFA's published 2026 schedule (Match 73–88). The eight
 // "winner vs best third" ties carry generic 3rd-1…3rd-8 slots resolved via
@@ -305,9 +321,10 @@ function buildKnockout(): Match[] {
       stage,
       kickoff: juneKickoff(day, hour, minute),
       venue: venueId ? venueById(venueId) : null,
-      // Knockout ties aren't in the broadcast listings yet (teams undetermined),
-      // so these resolve to "Broadcaster TBC".
-      broadcaster: broadcasterForTeams(home, away),
+      // Knockout broadcasters are pinned to bracket slots, not teams, so key by
+      // FIFA match number: the Round of 32 carries real channels; later rounds
+      // aren't listed yet and resolve to "Broadcaster TBC".
+      broadcaster: broadcasterForKnockoutMatch(number),
       home,
       away,
       // Seeded so the bracket can advance winners as each round finishes; the

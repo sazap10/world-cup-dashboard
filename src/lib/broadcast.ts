@@ -95,3 +95,41 @@ export function broadcasterForTeams(home: string, away: string): Broadcaster {
   const fixture = FIXTURE_BY_PAIR.get(pairKey(home, away));
   return (fixture && BROADCASTERS_BY_ID[fixture.channel]) || BROADCASTER_TBC;
 }
+
+// Knockout broadcaster allocation, keyed by FIFA match number rather than teams.
+// Unlike group ties (matched by pairing), the knockout listings on
+// live-footballontv.com are pinned to bracket slots: the Round of 32 (matches
+// 73–88) is published with channels even before some participants are known, so
+// keying by match number resolves the broadcaster regardless of which teams fill
+// the slot. Later rounds (89+) list as "TBC" on the source too, so they're
+// omitted here and fall back to the placeholder. ITV's STV regional variant and
+// the BBC red-button splits collapse onto our base itv1/bbc-one ids.
+const KNOCKOUT_BROADCASTER_BY_MATCH: Record<number, string> = {
+  73: 'itv1', // South Africa v Canada
+  74: 'bbc-one', // Germany v Paraguay
+  75: 'itv1', // Netherlands v Morocco
+  76: 'itv1', // Brazil v Japan
+  77: 'itv1', // France v Sweden
+  78: 'bbc-one', // Ivory Coast v Norway
+  79: 'itv1', // Mexico v Ecuador
+  80: 'bbc-one', // England v DR Congo
+  81: 'bbc-one', // USA v Bosnia-Herzegovina
+  82: 'itv1', // Belgium v Senegal
+  83: 'bbc-one', // Portugal v Croatia
+  84: 'bbc-one', // Spain v Austria
+  85: 'bbc-one', // Switzerland v Algeria
+  86: 'itv1', // Argentina v Cape Verde
+  87: 'itv1', // Colombia v Ghana
+  88: 'bbc-one', // Australia v Egypt
+};
+
+/**
+ * Real UK broadcaster for a knockout match by its FIFA match number, sourced from
+ * live-footballontv.com. Falls back to "TBC" for rounds the source hasn't listed,
+ * and for an unknown match number (null) — never to a team-keyed lookup, which
+ * could wrongly borrow a group-stage channel from a coincident pairing.
+ */
+export function broadcasterForKnockoutMatch(fifaMatch: number | null): Broadcaster {
+  const id = fifaMatch != null ? KNOCKOUT_BROADCASTER_BY_MATCH[fifaMatch] : undefined;
+  return (id && BROADCASTERS_BY_ID[id]) || BROADCASTER_TBC;
+}
