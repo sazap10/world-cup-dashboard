@@ -71,8 +71,19 @@ export function createBroadcastCache({
     };
   }
 
-  /** Node http(.IncomingMessage, .ServerResponse) handler for the endpoint. */
-  async function handle(_req, res) {
+  /** Node http(.IncomingMessage, .ServerResponse) handler for the endpoint.
+   *  Mirrors the Go server's method semantics: 405 for non-GET/HEAD, and no body
+   *  on HEAD. */
+  async function handle(req, res) {
+    const method = req.method ?? 'GET';
+    const isHead = method === 'HEAD';
+    if (method !== 'GET' && !isHead) {
+      res.statusCode = 405;
+      res.setHeader('Allow', 'GET, HEAD');
+      res.setHeader('Content-Type', 'application/json');
+      res.end('{"error":"method not allowed"}');
+      return;
+    }
     try {
       const out = await read();
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -80,12 +91,12 @@ export function createBroadcastCache({
       res.setHeader('X-Cache', out.cacheState);
       res.setHeader('X-Cache-Age', String(out.age));
       res.statusCode = out.status;
-      res.end(out.body);
+      res.end(isHead ? undefined : out.body);
     } catch (err) {
       console.error('[broadcast-cache] handler error:', err);
       res.statusCode = 502;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.end('<!-- internal error -->');
+      res.end(isHead ? undefined : '<!-- internal error -->');
     }
   }
 
