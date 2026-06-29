@@ -10,6 +10,9 @@
 //	FD_UPSTREAM             upstream origin (default football-data.org)
 //	FD_UPSTREAM_TIMEOUT_MS  per-fetch timeout (default 8000)
 //	VITE_COMPETITION        competition code (default WC)
+//	BCAST_UPSTREAM          where-to-watch source page (default live-footballontv.com)
+//	BCAST_CACHE_TTL_MS      broadcaster scrape cache window (default 21600000 = 6h)
+//	BCAST_UPSTREAM_TIMEOUT_MS  per-fetch timeout for the scrape (default 8000)
 package main
 
 import (
@@ -86,6 +89,15 @@ func main() {
 		timeout:     envMillis("FD_UPSTREAM_TIMEOUT_MS"),
 	})
 
+	// Broadcaster ("where to watch") cache: a 6h-cached passthrough of the source
+	// page that the browser parses client-side. Independent of the football-data
+	// token, so it works in seed-only mode too.
+	bcast := newBroadcastCache(broadcastConfig{
+		upstream: os.Getenv("BCAST_UPSTREAM"),
+		ttl:      envMillis("BCAST_CACHE_TTL_MS"),
+		timeout:  envMillis("BCAST_UPSTREAM_TIMEOUT_MS"),
+	})
+
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		setSecurityHeaders(w)
 		switch r.URL.Path {
@@ -98,6 +110,16 @@ func main() {
 				return
 			}
 			feed.handle(w, r)
+			return
+		case "/api/wc/broadcasters":
+			if r.Method != http.MethodGet && r.Method != http.MethodHead {
+				w.Header().Set("Allow", "GET, HEAD")
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				io.WriteString(w, `{"error":"method not allowed"}`)
+				return
+			}
+			bcast.handle(w, r)
 			return
 		case "/healthz":
 			w.Header().Set("Content-Type", "text/plain")

@@ -62,7 +62,16 @@ stays on whatever it has. The header shows a **Live data / Sample data** badge.
 
 Standings are always computed in-app from completed matches, so the seed and live paths
 behave identically. No sports API reports UK TV rights, so the **BBC/ITV "where to watch"
-channel is assigned locally** and deterministically per match in both modes.
+channel** is sourced from [live-footballontv.com](https://www.live-footballontv.com/live-world-cup-football-on-tv.html):
+the server keeps a 6h-cached copy of that page (the browser can't fetch it directly — no
+CORS, and our CSP is `connect-src 'self'`), the browser parses it
+([`src/data/broadcast-feed.ts`](src/data/broadcast-feed.ts)) and **merges the live
+allocation over the static tables** in [`src/lib/broadcast.ts`](src/lib/broadcast.ts). So
+channel changes are picked up at runtime without a code change; anything the page doesn't
+list (it only shows upcoming fixtures), an unknown team/channel, or a failed scrape falls
+back to the baked-in value. This runs independently of the football-data token, so it
+works in seed-only mode too. Tune it with `BCAST_CACHE_TTL_MS` (default 6h) and
+`BCAST_UPSTREAM` (point at a saved fixture for offline dev/CI).
 
 ### Enabling live data
 
@@ -106,8 +115,9 @@ example, to see the live state), freeze time with a query parameter:
 ## Deployment (single container)
 
 Production runs as **one static Go binary** ([`server/`](server)) that serves the built
-SPA *and* the cached `/api/wc/matches` endpoint. The dev server mirrors the same cache
-logic from [`server/feed-cache.mjs`](server/feed-cache.mjs), so behaviour is identical. No
+SPA *and* the cached `/api/wc/matches` and `/api/wc/broadcasters` endpoints. The dev server
+mirrors the same cache logic from [`server/feed-cache.mjs`](server/feed-cache.mjs) and
+[`server/broadcast-cache.mjs`](server/broadcast-cache.mjs), so behaviour is identical. No
 separate API service to run.
 
 Run it locally (needs Go + Node):
@@ -134,6 +144,7 @@ The token is passed as an **environment variable to the container** and stays se
 it's never in the image or the client bundle. Without a token the container still runs and
 serves the seed data. Runtime env vars: `PORT` (default 8080), `FOOTBALL_DATA_TOKEN`,
 `FD_CACHE_TTL_MS` (default 60000), `FD_UPSTREAM_TIMEOUT_MS` (default 8000),
+`BCAST_CACHE_TTL_MS` (default 21600000), `BCAST_UPSTREAM`, `BCAST_UPSTREAM_TIMEOUT_MS` (default 8000),
 `VITE_COMPETITION`, `FD_UPSTREAM`. Health check at `/healthz` (used by the Docker
 `HEALTHCHECK`). `docker-compose.yml` runs with `init: true` so signals are handled and
 zombies reaped. Put it behind any reverse proxy / TLS terminator (nginx, Caddy, a PaaS) —
