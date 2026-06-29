@@ -1267,11 +1267,31 @@
   color: var(--muted);
 }
 .tie-slot__name {
+  flex: 1;
+  min-width: 0;
   font-size: var(--text-sm);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.tie-slot__score {
+  font-size: var(--text-md);
+  font-weight: 700;
+  min-width: 1.2ch;
+  text-align: center;
+}
+.tie-slot--winner .tie-slot__name {
+  font-weight: 700;
+}
+.tie-slot--winner .tie-slot__score {
+  color: var(--accent);
+}
+.tie-slot--faded {
+  color: var(--muted);
+}
+.tie--live {
+  border-color: var(--accent-line);
 }
 .tie__foot {
   display: flex;
