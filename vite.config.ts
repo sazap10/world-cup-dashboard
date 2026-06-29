@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { createBroadcastCache } from './server/broadcast-cache.mjs';
 import { createFeedCache } from './server/feed-cache.mjs';
 
 /**
@@ -29,6 +30,31 @@ function footballDataCache(token: string): Plugin {
   };
 }
 
+/**
+ * Mounts the shared broadcaster ("where to watch") cache (see
+ * server/broadcast-cache.mjs) on the dev server at "/api/wc/broadcasters" — the
+ * same endpoint the production Go server exposes. A cached passthrough of the
+ * live-footballontv.com page; the browser parses it (src/data/broadcast-feed.ts).
+ */
+function broadcastCachePlugin(): Plugin {
+  const bcast = createBroadcastCache({
+    upstream: process.env.BCAST_UPSTREAM,
+    ttl: process.env.BCAST_CACHE_TTL_MS ? Number(process.env.BCAST_CACHE_TTL_MS) : undefined,
+    timeout: process.env.BCAST_UPSTREAM_TIMEOUT_MS
+      ? Number(process.env.BCAST_UPSTREAM_TIMEOUT_MS)
+      : undefined,
+  });
+
+  return {
+    name: 'broadcast-cache',
+    configureServer(server) {
+      server.middlewares.use('/api/wc/broadcasters', (req, res) => {
+        bcast.handle(req, res);
+      });
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // FOOTBALL_DATA_TOKEN stays server-side (only VITE_-prefixed vars reach the client).
@@ -36,7 +62,7 @@ export default defineConfig(({ mode }) => {
   const token = env.FOOTBALL_DATA_TOKEN ?? process.env.FOOTBALL_DATA_TOKEN ?? '';
 
   return {
-    plugins: [react(), footballDataCache(token)],
+    plugins: [react(), footballDataCache(token), broadcastCachePlugin()],
     server: {
       // Raw passthrough proxy, kept for direct/manual access. The app's default
       // endpoint is the cached "/api/wc/matches" above.

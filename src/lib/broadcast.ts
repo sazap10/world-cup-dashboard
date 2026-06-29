@@ -74,7 +74,7 @@ export const REAL_GROUP_FIXTURES: RealFixture[] = [
 ];
 
 /** Order-independent key for a tie, so home/away ordering doesn't matter. */
-function pairKey(a: string, b: string): string {
+export function pairKey(a: string, b: string): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 

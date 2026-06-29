@@ -8,6 +8,11 @@ import {
   useRef,
   useState,
 } from 'react';
+import {
+  applyBroadcastOverrides,
+  type BroadcastOverrides,
+  fetchBroadcastOverrides,
+} from '../data/broadcast-feed';
 import { type Dataset, isLiveEnabled, loadLiveDataset, SEED_DATASET } from '../data/source';
 import type { Team } from '../data/types';
 
@@ -41,7 +46,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [dataset, setDataset] = useState<Dataset>(SEED_DATASET);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Live UK broadcaster allocation, scraped from live-footballontv.com and merged
+  // over the static tables. Independent of the live match feed (and its token), so
+  // it enhances both the seed and live datasets. Empty until the first fetch lands.
+  const [overrides, setOverrides] = useState<BroadcastOverrides>(() => ({
+    byPair: new Map(),
+    byKnockoutMatch: new Map(),
+  }));
   const abortRef = useRef<AbortController | null>(null);
+  const bcastAbortRef = useRef<AbortController | null>(null);
+
+  const loadBroadcasters = useCallback(async () => {
+    bcastAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    bcastAbortRef.current = ctrl;
+    const next = await fetchBroadcastOverrides(ctrl.signal);
+    if (!ctrl.signal.aborted) setOverrides(next);
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!isLiveEnabled()) return;
@@ -62,6 +83,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const reload = useCallback(() => {
+    refresh();
+    loadBroadcasters();
+  }, [refresh, loadBroadcasters]);
+
   useEffect(() => {
     if (!isLiveEnabled()) return;
     refresh();
@@ -72,14 +98,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
+  // Broadcaster scrape runs once on mount regardless of the live feed (its 6h
+  // server cache makes a per-session fetch plenty), and again on an explicit reload.
+  useEffect(() => {
+    loadBroadcasters();
+    return () => bcastAbortRef.current?.abort();
+  }, [loadBroadcasters]);
+
+  // Merge the live broadcaster allocation over whichever dataset is active.
+  const displayed = useMemo(
+    () => applyBroadcastOverrides(dataset, overrides),
+    [dataset, overrides],
+  );
+
   const teamsByCode = useMemo(
-    () => Object.fromEntries(dataset.teams.map((t) => [t.code, t])),
-    [dataset],
+    () => Object.fromEntries(displayed.teams.map((t) => [t.code, t])),
+    [displayed],
   );
 
   const value = useMemo<DataState>(
-    () => ({ dataset, source: dataset.source, refreshing, error, teamsByCode, reload: refresh }),
-    [dataset, refreshing, error, teamsByCode, refresh],
+    () => ({
+      dataset: displayed,
+      source: displayed.source,
+      refreshing,
+      error,
+      teamsByCode,
+      reload,
+    }),
+    [displayed, refreshing, error, teamsByCode, reload],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
