@@ -7,7 +7,7 @@ import { broadcasterForKnockoutMatch, broadcasterForTeams } from '../lib/broadca
 import { venueIdForKnockoutMatch, venueIdForPair } from './match-venues';
 import { knockoutMatchNumberForKickoff } from './schedule';
 import type { Dataset } from './source';
-import type { GroupId, Match, Stage, Team, Venue } from './types';
+import type { GroupId, Match, Score, Stage, Team, Venue } from './types';
 import { venueById } from './venues';
 
 // The app calls our own server-side cached endpoint, which fetches the upstream
@@ -35,7 +35,18 @@ interface FdMatch {
   venue?: string | null;
   homeTeam: FdTeam;
   awayTeam: FdTeam;
-  score: { fullTime: { home: number | null; away: number | null } };
+  score: {
+    duration?: string;
+    fullTime: FdScore;
+    regularTime?: FdScore;
+    extraTime?: FdScore;
+    penalties?: FdScore;
+  };
+}
+
+interface FdScore {
+  home: number | null;
+  away: number | null;
 }
 
 const STAGE_MAP: Record<string, Stage> = {
@@ -105,6 +116,31 @@ function mapVenue(
   return null;
 }
 
+/**
+ * Split the feed's score node into the football scoreline and the shootout
+ * tally. For a penalty shootout the feed folds the shootout goals into
+ * `fullTime` (e.g. a 1-1 won 5-4 on pens reports fullTime 6-5, penalties 5-4 —
+ * see football-data.org "Dealing with scores"), so the true scoreline is
+ * `fullTime − penalties` and the shootout sits separately in `penalties`.
+ */
+export function mapScore(score: FdMatch['score']): {
+  result: Score | null;
+  penalties: Score | null;
+} {
+  const ft = score?.fullTime;
+  if (!ft || ft.home === null || ft.away === null) return { result: null, penalties: null };
+
+  const pens = score?.penalties;
+  const hasPens = pens != null && pens.home !== null && pens.away !== null;
+  if (hasPens) {
+    return {
+      result: { home: ft.home - (pens.home ?? 0), away: ft.away - (pens.away ?? 0) },
+      penalties: { home: pens.home as number, away: pens.away as number },
+    };
+  }
+  return { result: { home: ft.home, away: ft.away }, penalties: null };
+}
+
 function mapMatch(m: FdMatch): Match {
   const stage = STAGE_MAP[m.stage] ?? 'group';
   const group = parseGroup(m.group);
@@ -112,9 +148,7 @@ function mapMatch(m: FdMatch): Match {
   const home = m.homeTeam?.tla ? teamCode(m.homeTeam) : 'TBD';
   const away = m.awayTeam?.tla ? teamCode(m.awayTeam) : 'TBD';
 
-  const ft = m.score?.fullTime;
-  const result =
-    ft && ft.home !== null && ft.away !== null ? { home: ft.home, away: ft.away } : null;
+  const { result, penalties } = mapScore(m.score);
 
   const roundLabel =
     stage === 'group' && group
@@ -143,6 +177,7 @@ function mapMatch(m: FdMatch): Match {
     home,
     away,
     result,
+    penalties,
     roundLabel,
     statusOverride: mapStatus(m.status),
     minuteOverride: typeof m.minute === 'number' ? m.minute : null,

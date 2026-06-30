@@ -106,12 +106,17 @@ export function toView(match: Match, nowMs: number): MatchView {
       minuteLabel = sim.halftime ? 'HT' : `${sim.minute}’`;
     }
   }
+  // Penalties only make sense once they're settled: show them on a finished
+  // shootout, or live data that already carries the final tally. Seed data never
+  // has penalties (knockouts are seeded decisive), so this is live-only.
+  const showPenalties = status === 'finished' || liveSource;
   return {
     ...match,
     status,
     minute,
     minuteLabel,
     displayScore: displayScore(match, status, minute, liveSource),
+    displayPenalties: showPenalties ? (match.penalties ?? null) : null,
   };
 }
 

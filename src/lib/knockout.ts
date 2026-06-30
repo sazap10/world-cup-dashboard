@@ -141,10 +141,17 @@ function resolveWinner(
   if (!feeder || effectiveStatus(feeder, nowMs) !== 'finished' || !feeder.result) return fallback;
 
   const { home, away } = feeder.result;
-  // No extra-time/penalties in the data model, so a level score is undecided.
-  if (home === away) return fallback;
-
-  const winningOccupant = home > away ? feeder.home : feeder.away;
+  // Decide the tie: on the scoreline if it's decisive, else on the penalty
+  // shootout. A level score with no (or drawn) penalties is still undecided.
+  const pens = feeder.penalties;
+  let winningOccupant: string;
+  if (home !== away) {
+    winningOccupant = home > away ? feeder.home : feeder.away;
+  } else if (pens && pens.home !== pens.away) {
+    winningOccupant = pens.home > pens.away ? feeder.home : feeder.away;
+  } else {
+    return fallback;
+  }
   const resolved = resolveSlot(
     winningOccupant,
     teamsByCode,
@@ -238,6 +245,10 @@ function hydrateLiveKnockout(
       const flipped = live.home === b;
       tie.result =
         live.result && flipped ? { home: live.result.away, away: live.result.home } : live.result;
+      tie.penalties =
+        live.penalties && flipped
+          ? { home: live.penalties.away, away: live.penalties.home }
+          : (live.penalties ?? null);
       tie.statusOverride = live.statusOverride;
       tie.minuteOverride = live.minuteOverride;
       tie.halftimeOverride = live.halftimeOverride;

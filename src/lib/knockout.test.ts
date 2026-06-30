@@ -136,6 +136,44 @@ describe('resolveSlot only names guaranteed qualifiers', () => {
     expect(ids('final')).toEqual(['K-M103']);
   });
 
+  it('advances the penalty shootout winner when the scoreline is level', () => {
+    // A finished tie level at 1-1, won 5-4 on penalties by the away side.
+    const feeder: Match = {
+      id: 'K-M73',
+      stage: 'r32',
+      kickoff: PAST,
+      home: 'TA',
+      away: 'TB',
+      result: { home: 1, away: 1 },
+      penalties: { home: 4, away: 5 },
+      roundLabel: 'Round of 32',
+      statusOverride: 'finished',
+      ...stub,
+    };
+    const standings = allStandings([], TEAMS, NOW);
+    const resolved = resolveSlot('W73', byCode, [feeder], standings, NOW);
+    expect(resolved.team?.code).toBe('TB');
+    expect(resolved.provisional).toBe(false);
+  });
+
+  it('leaves a level tie undecided when there are no penalties', () => {
+    const feeder: Match = {
+      id: 'K-M73',
+      stage: 'r32',
+      kickoff: PAST,
+      home: 'TA',
+      away: 'TB',
+      result: { home: 1, away: 1 },
+      roundLabel: 'Round of 32',
+      statusOverride: 'finished',
+      ...stub,
+    };
+    const standings = allStandings([], TEAMS, NOW);
+    const resolved = resolveSlot('W73', byCode, [feeder], standings, NOW);
+    expect(resolved.team).toBeNull();
+    expect(resolved.label).toBe('Winner Match 73');
+  });
+
   it('does not name a best-third qualifier until every group has finished', () => {
     // Only group A is decided here; the other groups have no matches, so the
     // cross-group third-placed ranking isn't guaranteed yet.

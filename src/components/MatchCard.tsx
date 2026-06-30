@@ -10,6 +10,7 @@ import { Flag } from './Flag';
 interface TeamSide {
   code: string;
   goals: number | null;
+  pens: number | null;
   isWinner: boolean;
   faded: boolean;
 }
@@ -30,7 +31,12 @@ function TeamRow({ side }: { side: TeamSide }) {
         <span className="flag flag--md flag--slot" aria-hidden="true" />
       )}
       <span className="team-row__name">{team ? team.name : prettySlot(side.code)}</span>
-      {side.goals !== null && <span className="team-row__score mono">{side.goals}</span>}
+      {side.goals !== null && (
+        <span className="team-row__score mono">
+          {side.goals}
+          {side.pens !== null && <span className="team-row__pens">({side.pens})</span>}
+        </span>
+      )}
     </div>
   );
 }
@@ -46,12 +52,20 @@ export function MatchCard({ match, showRound = true }: Props) {
 
   const venue = match.venue;
   const score = match.displayScore;
+  const pens = match.displayPenalties;
   const homeGoals = score ? score.home : null;
   const awayGoals = score ? score.away : null;
   const finished = match.status === 'finished';
 
-  const homeWins = finished && score ? score.home > score.away : false;
-  const awayWins = finished && score ? score.away > score.home : false;
+  // A level finished tie is settled on penalties when present; otherwise a draw.
+  const homeWins =
+    finished && score
+      ? score.home > score.away || (score.home === score.away && !!pens && pens.home > pens.away)
+      : false;
+  const awayWins =
+    finished && score
+      ? score.away > score.home || (score.home === score.away && !!pens && pens.away > pens.home)
+      : false;
 
   const startsSoon =
     match.status === 'upcoming' && Date.parse(match.kickoff) - nowMs < 48 * 3600_000;
@@ -84,10 +98,22 @@ export function MatchCard({ match, showRound = true }: Props) {
 
       <div className="match-card__teams">
         <TeamRow
-          side={{ code: match.home, goals: homeGoals, isWinner: homeWins, faded: awayWins }}
+          side={{
+            code: match.home,
+            goals: homeGoals,
+            pens: pens ? pens.home : null,
+            isWinner: homeWins,
+            faded: awayWins,
+          }}
         />
         <TeamRow
-          side={{ code: match.away, goals: awayGoals, isWinner: awayWins, faded: homeWins }}
+          side={{
+            code: match.away,
+            goals: awayGoals,
+            pens: pens ? pens.away : null,
+            isWinner: awayWins,
+            faded: homeWins,
+          }}
         />
       </div>
 
