@@ -249,6 +249,44 @@ function hydrateLiveKnockout(
   return hydrated;
 }
 
+/**
+ * Lay the bracket out top-to-bottom so each tie sits next to the ties it feeds.
+ * Kickoff order scrambles this — e.g. M73 plays before M74 but feeds a different
+ * R16 game — so instead we walk the feeder graph from the final outwards: a
+ * round's order is its parents' order with each parent replaced by its two
+ * feeders (home then away). The result is the canonical single-elimination
+ * layout where every match lines up between the two it advances from. Returns a
+ * per-id rank; any match not reached (malformed bracket) falls back to kickoff.
+ */
+function bracketRank(knockout: Match[]): Map<string, number> {
+  const byId = new Map(knockout.map((m) => [m.id, m]));
+  const feederId = (occupant: string): string | null => {
+    const w = /^W(\d+)$/.exec(occupant);
+    return w ? `K-M${w[1]}` : null;
+  };
+  const rank = new Map<string, number>();
+  let next = 0;
+  // Start from the final and expand each round into the round that feeds it.
+  let layer = knockout.filter((m) => m.stage === 'final').map((m) => m.id);
+  const seen = new Set<string>();
+  while (layer.length > 0) {
+    const children: string[] = [];
+    for (const id of layer) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      rank.set(id, next++);
+      const m = byId.get(id);
+      if (!m) continue;
+      for (const occupant of [m.home, m.away]) {
+        const fid = feederId(occupant);
+        if (fid && byId.has(fid)) children.push(fid);
+      }
+    }
+    layer = children;
+  }
+  return rank;
+}
+
 export function buildBracket(matches: Match[], teams: Team[], nowMs: number): BracketRound[] {
   const teamsByCode = Object.fromEntries(teams.map((t) => [t.code, t]));
   const groupMatches = matches.filter((m) => m.stage === 'group');
@@ -257,12 +295,23 @@ export function buildBracket(matches: Match[], teams: Team[], nowMs: number): Br
   // their feeder by its K-M id (live ids are numeric and wouldn't match).
   const all = [...groupMatches, ...knockout];
   const standings = allStandings(all, teams, nowMs);
+  const rank = bracketRank(knockout);
+  // Order each round by bracket position so ties line up with the round they
+  // feed; fall back to kickoff for any match outside the feeder graph.
+  const order = (a: Match, b: Match): number => {
+    const ra = rank.get(a.id);
+    const rb = rank.get(b.id);
+    if (ra !== undefined && rb !== undefined) return ra - rb;
+    if (ra !== undefined) return -1;
+    if (rb !== undefined) return 1;
+    return Date.parse(a.kickoff) - Date.parse(b.kickoff);
+  };
   return ROUND_ORDER.map(({ stage, label }) => ({
     stage,
     label,
     matches: knockout
       .filter((m) => m.stage === stage)
-      .sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff))
+      .sort(order)
       .map((match) => ({
         match,
         home: resolveSlot(match.home, teamsByCode, all, standings, nowMs),

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { MATCHES } from '../data/schedule';
+import { TEAMS as ALL_TEAMS } from '../data/teams';
 import type { GroupId, Match, Score, Team } from '../data/types';
-import { resolveSlot } from './knockout';
+import { buildBracket, resolveSlot } from './knockout';
 import { allStandings } from './standings';
 
 // Fixed "now"; past-dated fixtures resolve to 'finished', future-dated ones stay
@@ -115,6 +117,23 @@ describe('resolveSlot only names guaranteed qualifiers', () => {
     expect(first.provisional).toBe(false);
     expect(second.team).toBeNull();
     expect(second.provisional).toBe(true);
+  });
+
+  it('orders each round by bracket position, not kickoff time', () => {
+    // Pre-tournament: nothing is decided, so this checks the structural layout.
+    const rounds = buildBracket(MATCHES, ALL_TEAMS, Date.parse('2026-06-01T00:00:00Z'));
+    const ids = (stage: string) =>
+      rounds.find((r) => r.stage === stage)?.matches.map((t) => t.match.id) ?? [];
+
+    // Each tie must sit next to the two it feeds: the canonical single-elimination
+    // layout walking out from the final (FIFA 2026 bracket progression).
+    expect(ids('r32')).toEqual(
+      [74, 77, 73, 75, 83, 84, 81, 82, 76, 78, 79, 80, 86, 88, 85, 87].map((n) => `K-M${n}`),
+    );
+    expect(ids('r16')).toEqual([89, 90, 93, 94, 91, 92, 95, 96].map((n) => `K-M${n}`));
+    expect(ids('qf')).toEqual([97, 98, 99, 100].map((n) => `K-M${n}`));
+    expect(ids('sf')).toEqual(['K-M101', 'K-M102']);
+    expect(ids('final')).toEqual(['K-M103']);
   });
 
   it('does not name a best-third qualifier until every group has finished', () => {
