@@ -70,8 +70,8 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
               </span>
               <span className="featured__score-sep">–</span>
               <span>
-                {pens && <span className="featured__pens">({pens.away})</span>}
                 {score.away}
+                {pens && <span className="featured__pens">({pens.away})</span>}
               </span>
             </div>
           ) : (
