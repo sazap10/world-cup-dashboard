@@ -26,6 +26,7 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
   const nowMs = useNow();
   const venue = match.venue;
   const score = match.displayScore;
+  const pens = match.displayPenalties;
   const isLive = match.status === 'live';
 
   return (
@@ -57,11 +58,21 @@ export function FeaturedMatch({ match }: { match: MatchView }) {
             <div
               className="featured__score mono"
               role="img"
-              aria-label={`Score: ${score.home}–${score.away}`}
+              aria-label={
+                pens
+                  ? `Score: ${score.home}–${score.away}, ${pens.home}–${pens.away} on penalties`
+                  : `Score: ${score.home}–${score.away}`
+              }
             >
-              <span>{score.home}</span>
+              <span>
+                {score.home}
+                {pens && <span className="featured__pens">({pens.home})</span>}
+              </span>
               <span className="featured__score-sep">–</span>
-              <span>{score.away}</span>
+              <span>
+                {score.away}
+                {pens && <span className="featured__pens">({pens.away})</span>}
+              </span>
             </div>
           ) : (
             <span className="featured__vs">vs</span>

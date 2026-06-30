@@ -62,6 +62,13 @@ export interface Match {
    * score reported by the API. `null` when no score applies yet.
    */
   result: Score | null;
+  /**
+   * Penalty shootout tally, when a knockout tie is decided on penalties (live
+   * data only). `result` holds the pre-shootout scoreline (the level score that
+   * sent the tie to penalties); this holds the goals scored in the shootout, so
+   * the two render together as e.g. "1 (5) – 1 (4)". Absent/null otherwise.
+   */
+  penalties?: Score | null;
   /** Human label for the round, e.g. "Round of 16". */
   roundLabel: string;
   /**
@@ -83,6 +90,8 @@ export interface MatchView extends Match {
   status: MatchStatus;
   /** Score to display now: final if finished, running if live, null if upcoming. */
   displayScore: Score | null;
+  /** Penalty shootout tally to show alongside the score, or null when none applies. */
+  displayPenalties: Score | null;
   /** Simulated minute for live matches (1–90+). */
   minute: number | null;
   /** Display string for the live minute, e.g. "67’" or "HT". Null when not live. */

@@ -8,11 +8,13 @@ import { Flag } from './Flag';
 function Slot({
   slot,
   goals,
+  pens,
   isWinner,
   faded,
 }: {
   slot: BracketMatch['home'];
   goals: number | null;
+  pens: number | null;
   isWinner: boolean;
   faded: boolean;
 }) {
@@ -32,7 +34,12 @@ function Slot({
         <span className="flag flag--sm flag--slot" aria-hidden="true" />
       )}
       <span className="tie-slot__name">{team ? team.name : slot.label}</span>
-      {goals !== null && <span className="tie-slot__score mono">{goals}</span>}
+      {goals !== null && (
+        <span className="tie-slot__score mono">
+          {goals}
+          {pens !== null && <span className="tie-slot__pens">({pens})</span>}
+        </span>
+      )}
     </div>
   );
 }
@@ -43,11 +50,18 @@ export function BracketTie({ tie }: { tie: BracketMatch }) {
   const { match } = tie;
   const view = toView(match, nowMs);
   const score = view.displayScore;
-  // No extra-time/penalties in the data model, so a level finished score is a
-  // draw with no winner highlighted (matches MatchCard's behaviour).
+  const pens = view.displayPenalties;
+  // Winner is the higher score, or — on a level finished tie — the side that won
+  // the penalty shootout. A level score with no penalties stays a draw.
   const finished = view.status === 'finished';
-  const homeWins = finished && score ? score.home > score.away : false;
-  const awayWins = finished && score ? score.away > score.home : false;
+  const homeWins =
+    finished && score
+      ? score.home > score.away || (score.home === score.away && !!pens && pens.home > pens.away)
+      : false;
+  const awayWins =
+    finished && score
+      ? score.away > score.home || (score.home === score.away && !!pens && pens.away > pens.home)
+      : false;
 
   return (
     <article className={`tie tie--${view.status}`}>
@@ -72,12 +86,14 @@ export function BracketTie({ tie }: { tie: BracketMatch }) {
         <Slot
           slot={tie.home}
           goals={score ? score.home : null}
+          pens={pens ? pens.home : null}
           isWinner={homeWins}
           faded={awayWins}
         />
         <Slot
           slot={tie.away}
           goals={score ? score.away : null}
+          pens={pens ? pens.away : null}
           isWinner={awayWins}
           faded={homeWins}
         />

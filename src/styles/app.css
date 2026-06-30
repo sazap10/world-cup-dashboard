@@ -516,6 +516,13 @@
   color: var(--faint);
   font-weight: 400;
 }
+.featured__pens {
+  margin-inline: 0.3ch;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--muted);
+  vertical-align: 0.15em;
+}
 .featured__vs {
   font-size: var(--text-lg);
   font-weight: 600;
@@ -749,6 +756,12 @@
 }
 .team-row--winner .team-row__score {
   color: var(--accent);
+}
+.team-row__pens {
+  margin-inline-start: 0.3ch;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .match-card__foot {
@@ -1286,6 +1299,12 @@
 }
 .tie-slot--winner .tie-slot__score {
   color: var(--accent);
+}
+.tie-slot__pens {
+  margin-inline-start: 0.25ch;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
 }
 .tie-slot--faded {
   color: var(--muted);
